@@ -1,0 +1,147 @@
+﻿@using Kanoe2.Services.Mockups
+@page "/config/chat"
+
+<MudCard Class="mt-3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4"> <b>Chat Config</b></MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent>
+        <div class="d-flex gap-4 align-center pt-3">
+            <MudFileUpload Class="mt-0" T="IBrowserFile" Accept=".css" FilesChanged="OnCssFileChange">
+                <ButtonTemplate>
+                    <MudButton Variant="Variant.Filled"
+                               HtmlTag="label"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               for="@context">
+                        .css File
+                    </MudButton>
+                </ButtonTemplate>
+            </MudFileUpload>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudDownload" Size="Size.Medium" OnClick="LoadCss" Disabled="@(!IsCSSUploaded)">Load Current</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Medium" Class="ml-auto" OnClick="Delete" Disabled="@(!IsCSSUploaded)">Delete Current</MudButton>
+        </div>
+        <MudText Typo="Typo.h5" Class="pb-3 pt-5 d-flex align-baseline gap-3">
+            Preview:
+            @if (CssFileContent != null)
+            {
+                <MudText>@CssFileName <MudText Class="mud-secondary-text" Typo="Typo.caption">(@CssFileDate)</MudText></MudText>
+            }
+        </MudText>
+        <MudPaper Class="pa-3" Outlined="true">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ChatMockupService.SendMessage">Send Message</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <iframe allowtransparency class="border p-0 chatmockup rounded" src="/chat/i@mockup?limit=4&mockup=true" id="chatpreview" @key=@(LastUpdate + "chat") />
+                </MudItem>
+                <MudItem xs="6">
+                    <Kanoe2.Shared.Components.CodeBlock Content="@CssFileContent" Height="400px" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+        <div class="d-flex pt-3">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" Class="ml-auto" OnClick="UploadCss" Disabled=@(CssFile == null)>Save</MudButton>
+        </div>
+    </MudCardContent>
+
+    <MudCardActions>
+
+    </MudCardActions>
+
+</MudCard>
+
+@code {
+    [Inject]
+    public required IWebHostEnvironment Environment { get; set; }
+    [Inject]
+    public required IJSRuntime JS { get; set; }
+
+    [Inject]
+    public required ChatMockupService ChatMockupService { get; set; }
+
+    [Inject]
+    private IDialogService? DialogService { get; set; }
+
+
+    private IBrowserFile? CssFile { get; set; }
+    private string? CssFileContent { get; set; }
+    private string? CssFileName { get; set; }
+    private string? CssFileDate { get; set; }
+
+    private string LastUpdate { get; set; } = "";
+    private bool IsCSSUploaded { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        IsCSSUploaded = File.Exists(Environment.ContentRootPath + "/UserData/uploads/chat.css");
+        base.OnInitialized();
+    }
+
+    private async void OnCssFileChange(IBrowserFile file)
+    {
+        CssFile = file;
+
+        using (StreamReader reader = new StreamReader(CssFile.OpenReadStream()))
+        {
+            CssFileContent = await reader.ReadToEndAsync();
+            CssFileName = CssFile.Name;
+            CssFileDate = CssFile.LastModified.ToLocalTime().ToString();
+        }
+
+        await JS.InvokeVoidAsync("AppendCss", "chatpreview", CssFileContent);
+        StateHasChanged();
+    }
+
+    private async void UploadCss()
+    {
+        if (CssFile != null)
+        {
+            System.IO.Directory.CreateDirectory(Environment.ContentRootPath + "/UserData/uploads/");
+            using FileStream fs = new(Environment.ContentRootPath + "/UserData/uploads/chat.css", FileMode.Create);
+            await CssFile.OpenReadStream().CopyToAsync(fs);
+            fs.Close();
+        }
+        IsCSSUploaded = File.Exists(Environment.ContentRootPath + "/UserData/uploads/chat.css");
+        StateHasChanged();
+    }
+
+    private async void LoadCss()
+    {
+        if (IsCSSUploaded)
+        {
+            CssFileContent = await File.ReadAllTextAsync(Environment.ContentRootPath + "/UserData/uploads/chat.css");
+            CssFileName = "Current";
+            CssFileDate = File.GetLastWriteTime(Environment.ContentRootPath + "/UserData/uploads/chat.css").ToLocalTime().ToString();
+            await JS.InvokeVoidAsync("AppendCss", "chatpreview", CssFileContent);
+            StateHasChanged();
+        }
+    }
+
+    private async void Delete()
+    {
+        if (DialogService != null)
+        {
+            bool? result = await DialogService.ShowMessageBox(
+                "Warning",
+                "Are you sure?",
+                yesText: "Delete", cancelText: "Cancel");
+
+            if (result == true)
+            {
+                try
+                {
+                    File.Delete(Environment.ContentRootPath + "/UserData/uploads/chat.css");
+                }
+                catch { }
+            };
+        }
+        IsCSSUploaded = File.Exists(Environment.ContentRootPath + "/UserData/uploads/chat.css");
+        StateHasChanged();
+    }
+
+}

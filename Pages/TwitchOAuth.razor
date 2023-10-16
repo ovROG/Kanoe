@@ -1,0 +1,37 @@
+﻿@page "/twitchoauth"
+@using System.Text.RegularExpressions;
+
+
+@code {
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    [Inject]
+    public required Services.Config ConfigService { get; set; }
+    [Inject]
+    public required Services.Twitch.TwitchApiService TwitchApiService { get; set; }
+
+    private readonly TaskCompletionSource<bool> IsReadyToRedirect = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Uri uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (uri.Fragment.Length > 0)
+        {
+            Regex regex = new Regex(@"(?<=access_token=)[^&#?]+");
+            if (regex.Match(uri.Fragment).Success)
+            {
+                string token = regex.Match(uri.Fragment).Value;
+                string login = await TwitchApiService.GetTwitchUserLogin(token);
+                ConfigService.SetTwitchToken(token).SetTwitchLogin(login).Save();
+                TwitchApiService.SetToken(token);
+            }
+        }
+        IsReadyToRedirect.SetResult(true);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await IsReadyToRedirect.Task;
+        Navigation.NavigateTo("config");
+    }
+}
