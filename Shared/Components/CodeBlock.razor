@@ -1,0 +1,41 @@
+﻿<MudPaper Outlined="true" Class="pa-3 overflow-scroll" Height=@Height>
+    @if (IsDarkMode)
+    {
+        <link rel="stylesheet" href="highlight.js/styles/dark.min.css">
+    }
+    else
+    {
+        <link rel="stylesheet" href="highlight.js/styles/default.min.css">
+    }
+    <pre>
+        <code>
+            @Code;
+        </code>
+    </pre>
+</MudPaper>
+
+
+@code {
+    [Inject]
+    public required IJSRuntime JS { get; set; }
+
+    [CascadingParameter(Name = "IsDarkMode")]
+    protected bool IsDarkMode { get; set; }
+
+    [Parameter]
+    public string? Content { get; set; }
+
+    [Parameter]
+    public string? Height { get; set; }
+
+    public MarkupString Code { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Content != null && Content != "") {
+            Code = (MarkupString)await JS.InvokeAsync<string>("FormatCode", Content);
+            StateHasChanged();
+        }
+    }
+}
+

@@ -1,0 +1,53 @@
+﻿@using System.Drawing
+
+<div class="messageWrapper @(MessageClass)" style=@(MessageStyle)>
+    <div class="username">@Message.Name</div>
+    <div class="message">
+        @foreach (string el in Message.Message.Split(" "))
+        {
+            Data.Models.Emote? emote = Message.EmoteSet.FirstOrDefault(emote => emote.Name == el);
+            if (emote is not null)
+            {
+                string url = $"https://static-cdn.jtvnw.net/emoticons/v2/{emote.Id}/default/dark/3.0";
+                <img class="emoticon" src=@url />
+            }
+            else
+            {
+                @(el + " ")
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Data.Models.ChatMessage Message { get; set; } = default!;
+
+    public string MessageStyle { get; set; } = default!;
+    public string MessageClass { get; set; } = default!;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        if (parameters.TryGetValue<Data.Models.ChatMessage>(nameof(Message), out var msg))
+        {
+            MessageStyle = "";
+            MessageClass = msg.Hidden ? "removing" : "";
+            string? color, colorNoLight;
+            if (msg.ColorHex.Length > 0)
+            {
+                color = msg.ColorHex;
+                colorNoLight = msg.ColorHex;
+
+                if (ColorTranslator.FromHtml(color).GetBrightness() > 0.7)
+                {
+                    colorNoLight = ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(ColorTranslator.FromHtml(color).ToArgb() ^ 0xFFFFFF));
+                }
+
+                MessageStyle += $"--user-color: {color}; \n";
+                MessageStyle += $"--user-color-nolight: {colorNoLight}; \n";
+            }
+        }
+
+        await base.SetParametersAsync(parameters);
+    }
+}

@@ -1,0 +1,72 @@
+﻿@page "/config"
+@using Kanoe2.Data.Models
+
+<div class="container">
+    <div>
+        <h2>Chat Config</h2>
+
+        <div class="input-group mb-3">
+            <InputFile class="form-control" OnChange="OnCssFileChange" />
+            <button class="btn btn-outline-primary" @onclick="UploadCss">Upload</button>
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Chat:</span>
+            <input type="text" class="form-control" placeholder="Username">
+            <button class="btn btn-outline-primary">Reload</button>
+        </div>
+        <div class="ratio ratio-4x3">
+            <iframe class="border p-0" src="/chat/cdawgva?limit=2" />
+        </div>
+    </div>
+    @if (AlertEvents == null)
+    {
+        <div class="spinner">Loading...</div>
+    }
+    else
+    {
+        @foreach (AlertEvent alert in AlertEvents)
+        {
+            <div>
+                @alert.Name
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Inject]
+    public required Services.Config ConfigService { get; set; }
+    [Inject]
+    public required IWebHostEnvironment Environment { get; set; }
+
+    public required IEnumerable<AlertEvent> AlertEvents { get; set; }
+
+    private IBrowserFile? CssFile { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadConfig();
+    }
+
+    private async Task LoadConfig()
+    {
+        AlertEvents = await ConfigService.GetAlerts();
+    }
+
+    private void OnCssFileChange(InputFileChangeEventArgs e)
+    {
+        CssFile = e.File;
+    }
+
+    private async Task UploadCss()
+    {
+        if (CssFile != null)
+        {
+            System.IO.Directory.CreateDirectory(Environment.ContentRootPath + "/UserData/uploads/");
+            using FileStream fs = new(Environment.ContentRootPath + "/UserData/uploads/chat.css", FileMode.Create);
+            await CssFile.OpenReadStream().CopyToAsync(fs);
+            fs.Close();
+        }
+    }
+}

@@ -1,0 +1,114 @@
+﻿@page "/chat/{channel}"
+@using Kanoe2.Services.Twitch
+@using Kanoe2.Services.Mockups
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.Json
+
+@layout EmptyLayout
+@implements IAsyncDisposable
+
+@if (Mockup != true)
+{
+    <link href="/api/userdata/uploads/chat.css" rel="stylesheet" />
+}
+
+<PageTitle>@Channel Chat</PageTitle>
+
+<div class="chatbox">
+    @foreach (var message in messages)
+    {
+        <Kanoe2.Shared.Components.ChatMessage Message="@message" />
+    }
+</div>
+
+@code {
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+
+    [Inject]
+    public required IJSRuntime JS { get; set; }
+
+    [Inject]
+    public required TwitchChatService TwitchChatService { get; set; }
+
+    [Inject]
+    public required ChatMockupService ChatMockupService { get; set; }
+
+    [Parameter]
+    public string Channel { get; set; } = default!;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "limit")]
+    public int? Limit { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "mockup")]
+    public bool? Mockup { get; set; } = false;
+
+    public List<Data.Models.ChatMessage> messages = new List<Data.Models.ChatMessage>();
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("init");
+        if (Mockup != true)
+        {
+            await TwitchChatService.ConnectTo(Channel.ToLower());
+        }
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        hubConnection.On<string>("ReceiveMessage", (json) =>
+        {
+            Data.Models.ChatMessage? message = JsonSerializer.Deserialize<Data.Models.ChatMessage>(json);
+            if (message != null)
+            {
+                messages.Add(message);
+                if (Limit.HasValue)
+                {
+                    string[] toHide = messages.Where(m => !m.Hidden).SkipLast(Limit.Value).Select(m => m.Id).ToArray();
+                    HideMessages(toHide);
+                }
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                Console.WriteLine("ERROR: Cannot DeserializeObject Message:");
+                Console.WriteLine(message);
+            }
+        });
+
+        hubConnection.On<string>("ClearedMessage", (id) =>
+        {
+            HideMessages(id);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        await hubConnection.InvokeAsync("JoinGroup", Mockup == true ? "i@mockup" : Channel.ToLower());
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        JS.InvokeVoidAsync("ScrollChat");
+    }
+
+    void HideMessages(params string[] ids)
+    {
+        IEnumerable<Data.Models.ChatMessage> toHide = messages.Where(m => ids.Any((id) => id == m.Id));
+        foreach (Data.Models.ChatMessage message in toHide)
+        {
+            message.Hidden = true;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
