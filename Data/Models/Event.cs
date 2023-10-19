@@ -9,26 +9,26 @@
 
     public abstract class Event
     {
-        public abstract EventType EventType { get; }
+        public abstract EventType Type { get; }
     }
 
     public class Sound : Event
     {
-        public override EventType EventType { get { return EventType.Sound; } }
-        public required string File { get; set; }
-        public required double Volume { get; set; }
+        public override EventType Type { get { return EventType.Sound; } }
+        public string File { get; set; } = default!;
+        public double Volume { get; set; }
     }
 
     public class TTS : Event
     {
-        public override EventType EventType { get { return EventType.TTS; } }
-        public required string Sound { get; set; }
-        public required double Volume { get; set; }
+        public override EventType Type { get { return EventType.TTS; } }
+        public string Sound { get; set; } = default!;
+        public double Volume { get; set; }
     }
 
     public class VTSHotkey : Event
     {
-        public override EventType EventType { get { return EventType.VTSHotkey; } }
-        public required int Id { get; set; }
+        public override EventType Type { get { return EventType.VTSHotkey; } }
+        public int Id { get; set; }
     }
 }

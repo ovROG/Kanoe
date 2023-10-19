@@ -9,16 +9,26 @@ namespace Kanoe2.Services
 
         private TwitchConfig TwitchConfig { get; set; }
 
+        private List<Data.Models.Action> Actions { get; set; }
+
         public Config()
         {
             TwitchConfig = new TwitchConfig();
-
+            Actions = new List<Data.Models.Action>();
             Load();
         }
 
-        public async Task<IEnumerable<AlertEvent>> GetAlerts()
+        public List<Data.Models.Action> GetActions()
         {
-            return new List<AlertEvent>();
+            return Actions;
+        }
+
+        public void AddAction()
+        {
+            Data.Models.Action newAction = new Data.Models.Action();
+            newAction.Name = "Action Name";
+            Actions.Add(newAction);
+            Save();
         }
 
         public TwitchConfig GetTwitchConfig()
@@ -46,10 +56,17 @@ namespace Kanoe2.Services
 
         public Config Save()
         {
-            XmlSerializer xmlSerializer = new(typeof(TwitchConfig));
             Directory.CreateDirectory(ConfigPath);
-            using StreamWriter writer = new(ConfigPath + "twitch.cfg");
-            xmlSerializer.Serialize(writer, TwitchConfig);
+
+            XmlSerializer TwitchSerializer = new(typeof(TwitchConfig));
+            XmlSerializer ActionSerializer = new(typeof(List<Data.Models.Action>));
+
+            using StreamWriter TwitchWriter = new(ConfigPath + "twitch.cfg");
+            TwitchSerializer.Serialize(TwitchWriter, TwitchConfig);
+
+            using StreamWriter ActionWriter = new(ConfigPath + "actions.cfg");
+            ActionSerializer.Serialize(ActionWriter, Actions);
+
             return this;
         }
 
@@ -61,6 +78,14 @@ namespace Kanoe2.Services
                 using StreamReader reader = new(ConfigPath + "twitch.cfg");
                 TwitchConfig = (TwitchConfig)serializer.Deserialize(reader)!;
             }
+
+            if (File.Exists(ConfigPath + "actions.cfg"))
+            {
+                XmlSerializer serializer = new(typeof(List<Data.Models.Action>));
+                using StreamReader reader = new(ConfigPath + "actions.cfg");
+                Actions = (List<Data.Models.Action>)serializer.Deserialize(reader)!;
+            }
+            
             return this;
         }
     }

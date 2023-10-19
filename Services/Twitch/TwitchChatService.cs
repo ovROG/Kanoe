@@ -42,8 +42,6 @@ namespace Kanoe2.Services.Twitch
 
             client.Initialize(credentials);
 
-            Console.WriteLine("connects");
-
             client.Connect();
         }
 

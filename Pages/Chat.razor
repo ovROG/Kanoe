@@ -50,7 +50,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("init");
         if (Mockup != true)
         {
             await TwitchChatService.ConnectTo(Channel.ToLower());

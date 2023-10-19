@@ -13,6 +13,6 @@
     public class TwitchPoints : Trigger
     {
         public override TriggerType Type { get { return TriggerType.TwitchPoints; } }
-        public required string Id { get; set; }
+        public string Id { get; set; } = default!;
     }
 }
