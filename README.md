@@ -3,7 +3,8 @@
 Something here later
 
 ## Run
-1. Instal Client libs (libman.json)
-2. Intsal NuGet libs
 
- 
+- Instal Client libs
+  1. dotnet tool install -g Microsoft.Web.LibraryManager.Cli (for Libman in VS Code)
+  2. libman restore
+- Intsal NuGet libs 2. (dotnet restore)
