@@ -1,6 +1,8 @@
 ﻿using Kanoe2.Data.Models;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
+using TwitchLib.Api.Helix.Models.ChannelPoints;
+using TwitchLib.Api.Helix.Models.ChannelPoints.GetCustomReward;
 
 namespace Kanoe2.Services.Twitch
 {
@@ -33,6 +35,23 @@ namespace Kanoe2.Services.Twitch
         {
             GetUsersResponse responce = await api.Helix.Users.GetUsersAsync(null, null, token);
             return responce.Users.First().Login;
+        }
+
+        public async Task<string> GetTwitchUserId(string login)
+        {
+            GetUsersResponse responce = await api.Helix.Users.GetUsersAsync(null, new List<string> { login });
+            return responce.Users.First().Id;
+        }
+
+        public async Task<CustomReward[]> GetPointRewards()
+        {
+            if(config.Login != null)
+            {
+                string id = await GetTwitchUserId(config.Login);
+                GetCustomRewardsResponse res = await api.Helix.ChannelPoints.GetCustomRewardAsync(id);
+                return res.Data;
+            }
+            return Array.Empty<CustomReward>();
         }
     }
 }

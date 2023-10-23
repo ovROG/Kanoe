@@ -27,8 +27,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-Init();
-
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -44,22 +42,3 @@ app.MapGet("/api/userdata/{*path}", async (HttpContext contex, UserFiles UF, str
 app.MapFallbackToPage("/_Host");
 
 app.Run();
-
-static void Init()
-{
-    string dir = Directory.GetCurrentDirectory();
-    try
-    {
-        if (Directory.Exists(dir + "/UserData/temp/"))
-        {
-            Directory.Delete(dir + "/UserData/temp/", true);
-        }
-    }
-    catch { }
-
-    if (File.Exists(dir + "/UserData/uploads/chat.css") && !File.Exists(dir + "/UserData/temp/chat.css"))
-    {
-        Directory.CreateDirectory(dir + "/UserData/temp");
-        File.Copy(dir + "/UserData/uploads/chat.css", dir + "/UserData/temp/chat.css");
-    }
-}

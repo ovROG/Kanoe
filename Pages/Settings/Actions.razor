@@ -31,7 +31,7 @@
                     }
                 </MudTd>
                 <MudTd DataLabel="Events">
-                    @if (context.Triggers.Count == 0)
+                    @if (context.Events.Count == 0)
                     {
                         <MudChip Size="Size.Small">Empty</MudChip>
                     }
@@ -41,7 +41,7 @@
                     }
                 </MudTd>
                 <MudTh Style="text-align:right">
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Edit">
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Edit" Href=@( "/config/actions/" + context.Id)>
                         Edit
                     </MudButton>
                 </MudTh>

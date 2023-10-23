@@ -10,13 +10,16 @@
     </MudCardHeader>
 
     <MudCardContent>
-        <Kanoe2.Shared.Components.PasswordInput @bind-Value="TwitchConfig.Id" Label="ID" Variant="Variant.Filled" Class="pt-3" />
-        <Kanoe2.Shared.Components.PasswordInput @bind-Value="TwitchConfig.Token" Label="Token" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-3" ReadOnly />
-         <MudTextField @bind-Value="TwitchConfig.Login" Label="Login" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-3" ReadOnly />
+        <Kanoe2.Shared.Components.PasswordInput @bind-Value="TwitchConfig.Id" Label="ID" Variant="Variant.Filled"
+            Class="pt-3" />
+        <Kanoe2.Shared.Components.PasswordInput @bind-Value="TwitchConfig.Token" Label="Token"
+            Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-3" ReadOnly />
+        <MudTextField @bind-Value="TwitchConfig.Login" Label="Login" Variant="Variant.Outlined" Margin="Margin.Dense"
+            Class="pt-3" ReadOnly />
     </MudCardContent>
 
     <MudCardActions>
-         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto">Auth</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto">Auth</MudButton>
     </MudCardActions>
 
 </MudCard>

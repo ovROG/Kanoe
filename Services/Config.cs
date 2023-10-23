@@ -20,15 +20,41 @@ namespace Kanoe2.Services
 
         public List<Data.Models.Action> GetActions()
         {
-            return Actions;
+            return Actions.ConvertAll(i => (Data.Models.Action)i.Clone());
         }
 
-        public void AddAction()
+        public Data.Models.Action? GetAction(Guid id)
         {
-            Data.Models.Action newAction = new Data.Models.Action();
-            newAction.Name = "Action Name";
+            return (Data.Models.Action?)Actions.Find(a => a.Id == id)?.Clone();
+        }
+
+        public Config SetAction(Data.Models.Action action)
+        {
+            int i = Actions.FindIndex(a => a.Id == action.Id);
+            if (i != -1)
+            {
+                Actions[i] = action;
+                Save();
+            }
+            return this;
+        }
+
+        public Config AddAction()
+        {
+            Data.Models.Action newAction = new()
+            {
+                Name = "Action Name"
+            };
             Actions.Add(newAction);
             Save();
+            return this;
+        }
+
+        public Config DeleteAction(Guid id)
+        {
+            Actions.RemoveAll(a => a.Id == id);
+            Save();
+            return this;
         }
 
         public TwitchConfig GetTwitchConfig()
@@ -74,18 +100,32 @@ namespace Kanoe2.Services
         {
             if (File.Exists(ConfigPath + "twitch.cfg"))
             {
-                XmlSerializer serializer = new(typeof(TwitchConfig));
-                using StreamReader reader = new(ConfigPath + "twitch.cfg");
-                TwitchConfig = (TwitchConfig)serializer.Deserialize(reader)!;
+                try
+                {
+                    XmlSerializer serializer = new(typeof(TwitchConfig));
+                    using StreamReader reader = new(ConfigPath + "twitch.cfg");
+                    TwitchConfig = (TwitchConfig)serializer.Deserialize(reader)!;
+                }
+                catch {
+                    TwitchConfig = new();
+                    Console.WriteLine("UNABLE TO READ TWITCH CONFIG");
+                }
             }
 
             if (File.Exists(ConfigPath + "actions.cfg"))
             {
-                XmlSerializer serializer = new(typeof(List<Data.Models.Action>));
-                using StreamReader reader = new(ConfigPath + "actions.cfg");
-                Actions = (List<Data.Models.Action>)serializer.Deserialize(reader)!;
+                try
+                {
+                    XmlSerializer serializer = new(typeof(List<Data.Models.Action>));
+                    using StreamReader reader = new(ConfigPath + "actions.cfg");
+                    Actions = (List<Data.Models.Action>)serializer.Deserialize(reader)!;
+                }
+                catch {
+                    Actions = new();
+                    Console.WriteLine("UNABLE TO READ ACTIONS CONFIG");
+                }
             }
-            
+
             return this;
         }
     }

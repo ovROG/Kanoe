@@ -1,0 +1,191 @@
+@using TwitchLib.Api.Helix.Models.ChannelPoints;
+@using Kanoe2.Data.Models;
+
+@inject NavigationManager NavigationManager;
+@inject IDialogService DialogService;
+
+@page "/config/actions/{id}"
+
+<MudCard Class="mt-3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-baseline gap-5">
+                <MudFab Size="Size.Medium" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/config/actions" />
+                <MudText Typo="Typo.h4" class="d-flex align-baseline gap-3"> <b>Action</b>
+                    <MudText>(@(Id))</MudText>
+                </MudText>
+                <MudFab Size="Size.Medium" class="ml-auto" Color="Color.Error" Disabled="@(Action == null)"
+                    OnClick="Delete" StartIcon="@Icons.Material.Filled.Delete" />
+                <MudFab Size="Size.Medium" Color="Color.Success" Disabled="@(Action == null)"
+                    OnClick="Save" StartIcon="@Icons.Material.Filled.Save" />
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (Action != null)
+        {
+            <div class="d-flex pt-3 align-content-center gap-5">
+                <MudTextField @bind-Value="@Action.Name" Label="Name" Variant="Variant.Text" />
+                <MudNumericField @bind-Value="@RateLimit" Label="RateLimit" Variant="Variant.Text" Min="0"
+                    Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" />
+                <MudSwitch @bind-Checked="@Action.AutoDisable" Label="Auto Disable" Color="Color.Primary"
+                    class="justify-end" />
+            </div>
+            <MudPaper Class="mt-3 pa-3" Outlined="true">
+                <div class="d-flex gap-3">
+                    <MudText Typo="Typo.h5">Triggers</MudText>
+                    <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
+                        <ActivatorContent>
+                            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (TriggerType triggerType in (TriggerType[])Enum.GetValues(typeof(TriggerType)))
+                            {
+                                <MudMenuItem OnClick="() => newTrigger(triggerType)">@triggerType</MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </div>
+                @if (Action.Triggers.Count > 0)
+                {
+                    <MudTable Items="@Action.Triggers" Hover="true" class="mt-3" Outlined="true">
+                        <RowTemplate>
+                            <MudTd>
+                                <div class="d-flex align-baseline gap-5">
+                                    @context.Type
+                                    @if (context.Type == TriggerType.TwitchPoints)
+                                    {
+                                        <MudSelect T="string" @bind-Value="@(((TwitchPoints)context).Id)" Label="Reward"
+                                            AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+                                            @foreach (CustomReward reward in TwitchRewards)
+                                            {
+                                                <MudSelectItem Value="@(reward.Id)">
+                                                    @reward.Title
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudPaper>
+            <MudPaper Class="mt-3 pa-3" Outlined="true">
+                <div class="d-flex gap-3">
+                    <MudText Typo="Typo.h5">Events</MudText>
+                    <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
+                        <ActivatorContent>
+                            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (EventType eventType in (EventType[])Enum.GetValues(typeof(EventType)))
+                            {
+                                <MudMenuItem OnClick="() => newEvent(eventType)">@eventType</MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </div>
+                @if (Action.Events.Count > 0)
+                {
+                    <MudTable Items="@Action.Events" Hover="true" class="mt-3" Outlined="true">
+                        <RowTemplate>
+                            <MudTd>
+                                <div class="d-flex align-baseline gap-5">
+                                    @context.Type
+                                    @if (context.Type == EventType.Sound)
+                                    {
+                                    }
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudPaper>
+        }
+        else
+        {
+            <MudText>No Action With id: <b>@Id</b></MudText>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Inject]
+    public required Services.Config ConfigService { get; set; }
+    [Inject]
+    public required Services.Twitch.TwitchApiService TwitchApiService { get; set; }
+
+    [Parameter]
+    public string Id { get; set; } = default!;
+
+    public Data.Models.Action? Action { get; set; }
+    public CustomReward[] TwitchRewards { get; set; } = Array.Empty<CustomReward>();
+
+    public double RateLimit { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Action = ConfigService.GetAction(new Guid(Id));
+        if (Action != null)
+        {
+            RateLimit = Action.RateLimit.TotalMilliseconds;
+        }
+        TwitchRewards = await TwitchApiService.GetPointRewards();
+    }
+
+    public void newTrigger(TriggerType type)
+    {
+        Trigger newTrigger;
+        switch (type)
+        {
+            case TriggerType.TwitchPoints:
+                newTrigger = new TwitchPoints();
+                break;
+            default:
+                throw new ArgumentException("No type found", nameof(type));
+        }
+        Action!.Triggers.Add(newTrigger);
+    }
+
+    public void newEvent(EventType type)
+    {
+        Event newEvent;
+        switch (type)
+        {
+            case EventType.Sound:
+                newEvent = new Data.Models.Sound();
+                break;
+            case EventType.TTS:
+                newEvent = new Data.Models.TTS();
+                break;
+            case EventType.VTSHotkey:
+                newEvent = new Data.Models.VTSHotkey();
+                break;
+            default:
+                throw new ArgumentException("No type found", nameof(type));
+        }
+        Action!.Events.Add(newEvent);
+    }
+
+    public void Save()
+    {
+        Action!.RateLimit = TimeSpan.FromMilliseconds(RateLimit);
+        ConfigService.SetAction(Action!);
+    }
+
+    public async void Delete()
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Warning",
+            "Are you sure?",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (result == true)
+        {
+            ConfigService.DeleteAction(Action!.Id);
+            NavigationManager.NavigateTo("/config/actions");
+        };
+    }
+}
