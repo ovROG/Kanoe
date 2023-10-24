@@ -41,7 +41,7 @@
                         <ChildContent>
                             @foreach (TriggerType triggerType in (TriggerType[])Enum.GetValues(typeof(TriggerType)))
                             {
-                                <MudMenuItem OnClick="() => newTrigger(triggerType)">@triggerType</MudMenuItem>
+                                <MudMenuItem OnClick="() => NewTrigger(triggerType)">@triggerType</MudMenuItem>
                             }
                         </ChildContent>
                     </MudMenu>
@@ -51,7 +51,7 @@
                     <MudTable Items="@Action.Triggers" Hover="true" class="mt-3" Outlined="true">
                         <RowTemplate>
                             <MudTd>
-                                <div class="d-flex align-baseline gap-5">
+                                <div class="d-flex align-center gap-5">
                                     @context.Type
                                     @if (context.Type == TriggerType.TwitchPoints)
                                     {
@@ -65,6 +65,7 @@
                                             }
                                         </MudSelect>
                                     }
+                                    <MudFab class="ml-auto" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeleteTrigger(context)" />
                                 </div>
                             </MudTd>
                         </RowTemplate>
@@ -81,7 +82,7 @@
                         <ChildContent>
                             @foreach (EventType eventType in (EventType[])Enum.GetValues(typeof(EventType)))
                             {
-                                <MudMenuItem OnClick="() => newEvent(eventType)">@eventType</MudMenuItem>
+                                <MudMenuItem OnClick="() => NewEvent(eventType)">@eventType</MudMenuItem>
                             }
                         </ChildContent>
                     </MudMenu>
@@ -91,11 +92,13 @@
                     <MudTable Items="@Action.Events" Hover="true" class="mt-3" Outlined="true">
                         <RowTemplate>
                             <MudTd>
-                                <div class="d-flex align-baseline gap-5">
+                                <div class="d-flex align-center gap-5">
                                     @context.Type
-                                    @if (context.Type == EventType.Sound)
+                                    @if (context.Type == EventType.TTS)
                                     {
+                                        <MudTextField @bind-Value="(context as TTS)!.Template" Label="Template" Variant="Variant.Outlined"></MudTextField>
                                     }
+                                    <MudFab class="ml-auto" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeleteEvent(context)" />
                                 </div>
                             </MudTd>
                         </RowTemplate>
@@ -135,7 +138,7 @@
         TwitchRewards = await TwitchApiService.GetPointRewards();
     }
 
-    public void newTrigger(TriggerType type)
+    public void NewTrigger(TriggerType type)
     {
         Trigger newTrigger;
         switch (type)
@@ -149,7 +152,12 @@
         Action!.Triggers.Add(newTrigger);
     }
 
-    public void newEvent(EventType type)
+    public void DeleteTrigger(Trigger trigger)
+    {
+        Action!.Triggers.Remove(trigger);
+    }
+
+    public void NewEvent(EventType type)
     {
         Event newEvent;
         switch (type)
@@ -167,6 +175,11 @@
                 throw new ArgumentException("No type found", nameof(type));
         }
         Action!.Events.Add(newEvent);
+    }
+
+    public void DeleteEvent(Event e)
+    {
+        Action!.Events.Remove(e);
     }
 
     public void Save()
