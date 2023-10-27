@@ -97,8 +97,10 @@
                                     @if (context.Type == EventType.TTS)
                                     {
                                         <MudTextField @bind-Value="(context as TTS)!.Template" Label="Template" Variant="Variant.Outlined"></MudTextField>
+                                        <MudSlider @bind-Value="(context as TTS)!.Volume" Min="0" Max="1" Step="0.05" Variant="Variant.Filled" ValueLabel="true" class="flex-1">Volume</MudSlider>
+                                        <MudFab class="flex-none" Size="Size.Small" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlayArrow" OnClick="() => TTSPlay((context as TTS)!)" />
                                     }
-                                    <MudFab class="ml-auto" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeleteEvent(context)" />
+                                    <MudFab class="flex-none ml-auto" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeleteEvent(context)" />
                                 </div>
                             </MudTd>
                         </RowTemplate>
@@ -114,6 +116,9 @@
 </MudCard>
 
 @code {
+    [Inject]
+    public required IJSRuntime JS { get; set; }
+
     [Inject]
     public required Services.Config ConfigService { get; set; }
     [Inject]
@@ -200,5 +205,10 @@
             ConfigService.DeleteAction(Action!.Id);
             NavigationManager.NavigateTo("/config/actions");
         };
+    }
+
+    public void TTSPlay(TTS tts)
+    {
+        JS.InvokeVoidAsync("TTS", tts.Template, tts.Volume);
     }
 }

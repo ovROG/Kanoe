@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System.Text;
+using System.Xml.Serialization;
 
 namespace Kanoe2.Data.Models
 {
@@ -40,11 +41,21 @@ namespace Kanoe2.Data.Models
         public string Template { get; set; } = "{name} said: {text}";
         public double Volume { get; set; } = 0.8;
 
-        public static readonly string[] varibles = { "{name}", "{text}"};
+        public static readonly string[] VariblesList = { "{name}", "{text}" };
 
         public override object Clone()
         {
             return MemberwiseClone();
+        }
+
+        public string FillTemplate(Dictionary<string, string> varibles)
+        {
+            StringBuilder stringBuilder = new(Template);
+            foreach (KeyValuePair<string, string> var in varibles)
+            {
+                stringBuilder.Replace(var.Key, var.Value);
+            }
+            return stringBuilder.ToString();
         }
     }
 

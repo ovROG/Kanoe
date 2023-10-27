@@ -3,11 +3,11 @@ using System.Drawing;
 
 namespace Kanoe2.Data
 {
-    public class Mockups
+    public static class Mockups
     {
-        static Random rnd = new();
+        static readonly Random rnd = new();
 
-        static List<string> mockupNames = new() {
+        static readonly List<string> mockupNames = new() {
             "chvetochek_",
             "darkness_greys",
             "human_wolf",
@@ -17,7 +17,7 @@ namespace Kanoe2.Data
             "neilee",
         };
 
-        static List<(string, List<Emote>)> mockupMessagesBase = new() {
+        static readonly List<(string, List<Emote>)> mockupMessagesBase = new() {
             ("фига, ну игрушка явно интересная", new List<Emote>() ),
             ("Оврог помидорка", new List<Emote>()),
             ("The quick brown fox jumps over the lazy dog", new List<Emote>()),
@@ -52,6 +52,5 @@ namespace Kanoe2.Data
                 false
                 );
         }
-
     }
 }
