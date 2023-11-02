@@ -2,7 +2,7 @@
 
 namespace Kanoe2.Hubs
 {
-    public class Chat : Hub
+    public class Chat : Hub //TODO: Add type
     {
         public async Task JoinGroup(string groupName)
         {

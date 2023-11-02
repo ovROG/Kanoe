@@ -22,7 +22,8 @@
             {
                 string token = regex.Match(uri.Fragment).Value;
                 string login = await TwitchApiService.GetTwitchUserLogin(token);
-                ConfigService.SetTwitchToken(token).SetTwitchLogin(login).Save();
+                string userId = await TwitchApiService.GetTwitchUserId(login);
+                ConfigService.SetTwitchToken(token).SetTwitchLogin(login).SetTwitchUserId(userId).Save();
                 TwitchApiService.SetToken(token);
             }
         }
@@ -32,6 +33,6 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await IsReadyToRedirect.Task;
-        Navigation.NavigateTo("config");
+        Navigation.NavigateTo("/");
     }
 }

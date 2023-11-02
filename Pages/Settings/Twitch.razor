@@ -10,12 +10,15 @@
     </MudCardHeader>
 
     <MudCardContent>
-        <Kanoe2.Shared.Components.PasswordInput @bind-Value="TwitchConfig.Id" Label="ID" Variant="Variant.Filled"
-            Class="pt-3" />
-        <Kanoe2.Shared.Components.PasswordInput @bind-Value="TwitchConfig.Token" Label="Token"
+        <Kanoe2.Shared.Components.PasswordInput @bind-Value="Id" Label="ID" Variant="Variant.Filled" Class="pt-3" />
+        <Kanoe2.Shared.Components.PasswordInput Value="ConfigService.GetTwitchToken()" Label="Token"
             Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-3" ReadOnly />
-        <MudTextField @bind-Value="TwitchConfig.Login" Label="Login" Variant="Variant.Outlined" Margin="Margin.Dense"
-            Class="pt-3" ReadOnly />
+        <div class="d-flex gap-5">
+            <MudTextField Value="ConfigService.GetTwitchLogin()" Label="Login" Variant="Variant.Outlined"
+                Margin="Margin.Dense" Class="pt-3" ReadOnly />
+            <Kanoe2.Shared.Components.PasswordInput Value="ConfigService.GetTwitchUserId()" Label="UserID"
+                Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-3" ReadOnly />
+        </div>
     </MudCardContent>
 
     <MudCardActions>
@@ -30,26 +33,21 @@
     [Inject]
     public required NavigationManager Navigation { get; set; }
 
-    public required TwitchConfig TwitchConfig { get; set; } = new TwitchConfig();
+    public string Id { get; set; } = "";
 
     protected override void OnInitialized()
     {
-        LoadConfig();
-    }
-
-    private void LoadConfig()
-    {
-        TwitchConfig = ConfigService.GetTwitchConfig();
+        Id = ConfigService.GetTwitchId() ?? "";
     }
 
     private void TwitchAuth()
     {
-        if (TwitchConfig.Id != null)
+        if (Id != null)
         {
-            ConfigService.SetTwitchId(TwitchConfig.Id);
+            ConfigService.SetTwitchId(Id);
 
             string OAuthParams =
-            $"client_id={TwitchConfig.Id}" +
+            $"client_id={Id}" +
             $"&redirect_uri={Navigation.BaseUri}twitchoauth" +
             "&response_type=token" +
             "&force_verify=true" +

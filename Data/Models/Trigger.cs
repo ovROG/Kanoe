@@ -27,5 +27,16 @@ namespace Kanoe2.Data.Models
         {
             return MemberwiseClone();
         }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is TwitchPoints tp)
+            {
+                return tp.Id == Id;
+            }
+            return false;
+        }
+
+        public override int GetHashCode() { return Id.GetHashCode(); }
     }
 }

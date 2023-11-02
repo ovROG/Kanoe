@@ -56,8 +56,8 @@
         }
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
-            .Build();
+        .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+        .Build();
 
         hubConnection.On<string>("ReceiveMessage", (json) =>
         {

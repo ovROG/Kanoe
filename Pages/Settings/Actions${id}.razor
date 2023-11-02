@@ -22,14 +22,14 @@
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent>
-        @if (Action != null)
+        @if (Action != null) //TODO: Figure out how to implement rate limit
         {
             <div class="d-flex pt-3 align-content-center gap-5">
                 <MudTextField @bind-Value="@Action.Name" Label="Name" Variant="Variant.Text" />
                 <MudNumericField @bind-Value="@RateLimit" Label="RateLimit" Variant="Variant.Text" Min="0"
-                    Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" />
+                    Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" Disabled /> 
                 <MudSwitch @bind-Checked="@Action.AutoDisable" Label="Auto Disable" Color="Color.Primary"
-                    class="justify-end" />
+                    class="justify-end" Disabled />
             </div>
             <MudPaper Class="mt-3 pa-3" Outlined="true">
                 <div class="d-flex gap-3">

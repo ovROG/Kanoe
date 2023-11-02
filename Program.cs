@@ -12,10 +12,16 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 
 builder.Services.AddSingleton<Config>();
+builder.Services.AddSingleton<UserFiles>();
+
+builder.Services.AddSingleton<ActionsService>();
+
 builder.Services.AddSingleton<TwitchApiService>();
 builder.Services.AddSingleton<TwitchChatService>();
+builder.Services.AddSingleton<TwitchEventsService>();
+
 builder.Services.AddSingleton<ChatMockupService>();
-builder.Services.AddSingleton<UserFiles>();
+
 
 var app = builder.Build();
 
@@ -36,6 +42,7 @@ app.UseRouting();
 app.MapBlazorHub();
 
 app.MapHub<Chat>("/chathub");
+app.MapHub<Actions>("/actionshub");
 
 app.MapGet("/api/userdata/{*path}", async (HttpContext contex, UserFiles UF, string path) => await UF.GetLocalFile(contex, @$"\UserData\{path}"));
 

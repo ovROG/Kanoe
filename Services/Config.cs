@@ -18,9 +18,16 @@ namespace Kanoe2.Services
             Load();
         }
 
+        //Actions
+
         public List<Data.Models.Action> GetActions()
         {
             return Actions.ConvertAll(i => (Data.Models.Action)i.Clone());
+        }
+
+        public List<Data.Models.Action> GetActionsByTrigger(Trigger trigger)
+        {
+            return Actions.Where(a => a.Triggers.Contains(trigger)).ToList().ConvertAll(i => (Data.Models.Action)i.Clone());
         }
 
         public Data.Models.Action? GetAction(Guid id)
@@ -57,9 +64,11 @@ namespace Kanoe2.Services
             return this;
         }
 
-        public TwitchConfig GetTwitchConfig()
+        //Twitch
+
+        public string? GetTwitchId()
         {
-            return TwitchConfig;
+            return TwitchConfig.Id;
         }
 
         public Config SetTwitchId(string id)
@@ -68,10 +77,20 @@ namespace Kanoe2.Services
             return this;
         }
 
+        public string? GetTwitchToken()
+        {
+            return TwitchConfig.Token;
+        }
+
         public Config SetTwitchToken(string token)
         {
             TwitchConfig.Token = token;
             return this;
+        }
+
+        public string? GetTwitchLogin()
+        {
+            return TwitchConfig.Login;
         }
 
         public Config SetTwitchLogin(string login)
@@ -80,11 +99,24 @@ namespace Kanoe2.Services
             return this;
         }
 
+        public string? GetTwitchUserId()
+        {
+            return TwitchConfig.UserId;
+        }
+
+        public Config SetTwitchUserId(string userId)
+        {
+            TwitchConfig.UserId = userId;
+            return this;
+        }
+
+        //etc
+
         public Config Save()
         {
             Directory.CreateDirectory(ConfigPath);
 
-            XmlSerializer TwitchSerializer = new(typeof(TwitchConfig));
+            XmlSerializer TwitchSerializer = new(typeof(TwitchConfig)); //TODO: May be move to static in classes
             XmlSerializer ActionSerializer = new(typeof(List<Data.Models.Action>));
 
             using StreamWriter TwitchWriter = new(ConfigPath + "twitch.cfg");
@@ -106,7 +138,8 @@ namespace Kanoe2.Services
                     using StreamReader reader = new(ConfigPath + "twitch.cfg");
                     TwitchConfig = (TwitchConfig)serializer.Deserialize(reader)!;
                 }
-                catch {
+                catch
+                {
                     TwitchConfig = new();
                     Console.WriteLine("UNABLE TO READ TWITCH CONFIG");
                 }
@@ -120,7 +153,8 @@ namespace Kanoe2.Services
                     using StreamReader reader = new(ConfigPath + "actions.cfg");
                     Actions = (List<Data.Models.Action>)serializer.Deserialize(reader)!;
                 }
-                catch {
+                catch
+                {
                     Actions = new();
                     Console.WriteLine("UNABLE TO READ ACTIONS CONFIG");
                 }

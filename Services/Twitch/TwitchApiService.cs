@@ -9,14 +9,14 @@ namespace Kanoe2.Services.Twitch
     public class TwitchApiService
     {
         private readonly TwitchAPI api;
-        private readonly TwitchConfig config;
+        private readonly Config config;
 
-        public TwitchApiService(Services.Config configService)
+        public TwitchApiService(Config configService)
         {
             api = new TwitchAPI();
-            config = configService.GetTwitchConfig();
-            api.Settings.ClientId = config.Id;
-            api.Settings.AccessToken = config.Token;
+            config = configService;
+            api.Settings.ClientId = configService.GetTwitchId();
+            api.Settings.AccessToken = configService.GetTwitchToken();
         }
 
         public TwitchApiService SetClientId(string clientId)
@@ -45,10 +45,16 @@ namespace Kanoe2.Services.Twitch
 
         public async Task<CustomReward[]> GetPointRewards()
         {
-            if(config.Login != null)
+            if (config.GetTwitchLogin() != null)
             {
-                string id = await GetTwitchUserId(config.Login);
-                GetCustomRewardsResponse res = await api.Helix.ChannelPoints.GetCustomRewardAsync(id);
+                string? userId = config.GetTwitchUserId();
+                if (userId == null)
+                {
+                    string login = config.GetTwitchLogin()!;
+                    userId = await GetTwitchUserId(login);
+                    config.SetTwitchUserId(userId);
+                }
+                GetCustomRewardsResponse res = await api.Helix.ChannelPoints.GetCustomRewardAsync(userId);
                 return res.Data;
             }
             return Array.Empty<CustomReward>();

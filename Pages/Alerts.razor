@@ -1,0 +1,53 @@
+@page "/alerts"
+@using Kanoe2.Services.Twitch
+@using Microsoft.AspNetCore.SignalR.Client
+
+@layout EmptyLayout
+@implements IAsyncDisposable
+
+<PageTitle>Alerts</PageTitle>
+
+<>
+    <div>HI</div>
+</>
+
+@code {
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    [Inject]
+    public required IJSRuntime JS { get; set; }
+
+    [Inject]
+    public required TwitchEventsService TwitchEventsService { get; set; }
+    [Inject]
+    public required Services.ActionsService ActionsService { get; set; }
+
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(Navigation.ToAbsoluteUri("/actionshub"))
+        .Build();
+
+        TwitchEventsService.Connect();
+
+        hubConnection.On<string, double>("TTS", TTS);
+
+        await hubConnection.StartAsync();
+    }
+
+    public async void TTS(string text, double volume)
+    {
+        await JS.InvokeVoidAsync("TTS", text, volume);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+}
