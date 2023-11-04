@@ -1,5 +1,6 @@
 @using TwitchLib.Api.Helix.Models.ChannelPoints;
 @using Kanoe2.Data.Models;
+@using Kanoe2.Shared.Components.Events;
 
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
@@ -10,33 +11,33 @@
     <MudCardHeader>
         <CardHeaderContent>
             <div class="d-flex align-baseline gap-5">
-                <MudFab Size="Size.Medium" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/config/actions" />
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/config/actions" />
                 <MudText Typo="Typo.h4" class="d-flex align-baseline gap-3"> <b>Action</b>
                     <MudText>(@(Id))</MudText>
                 </MudText>
-                <MudFab Size="Size.Medium" class="ml-auto" Color="Color.Error" Disabled="@(Action == null)"
-                    OnClick="Delete" StartIcon="@Icons.Material.Filled.Delete" />
-                <MudFab Size="Size.Medium" Color="Color.Success" Disabled="@(Action == null)"
-                    OnClick="Save" StartIcon="@Icons.Material.Filled.Save" />
+                <MudIconButton class="ml-auto" Color="Color.Error" Disabled="@(Action == null)"
+                    Icon="@Icons.Material.Filled.Delete" OnClick="Delete" />
+                <MudIconButton Color="Color.Success" Disabled="@(Action == null)" Icon="@Icons.Material.Filled.Save"
+                    OnClick="Save" />
             </div>
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent>
-        @if (Action != null) //TODO: Figure out how to implement rate limit
+        @if (Action != null)
         {
             <div class="d-flex pt-3 align-content-center gap-5">
                 <MudTextField @bind-Value="@Action.Name" Label="Name" Variant="Variant.Text" />
                 <MudNumericField @bind-Value="@RateLimit" Label="RateLimit" Variant="Variant.Text" Min="0"
-                    Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" Disabled /> 
+                    Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" Disabled />
                 <MudSwitch @bind-Checked="@Action.AutoDisable" Label="Auto Disable" Color="Color.Primary"
                     class="justify-end" Disabled />
             </div>
-            <MudPaper Class="mt-3 pa-3" Outlined="true">
+            <MudPaper Class="mt-3 pa-3" Elevation="0">
                 <div class="d-flex gap-3">
                     <MudText Typo="Typo.h5">Triggers</MudText>
                     <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
                         <ActivatorContent>
-                            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
                         </ActivatorContent>
                         <ChildContent>
                             @foreach (TriggerType triggerType in (TriggerType[])Enum.GetValues(typeof(TriggerType)))
@@ -53,10 +54,10 @@
                             <MudTd>
                                 <div class="d-flex align-center gap-5">
                                     @context.Type
-                                    @if (context.Type == TriggerType.TwitchPoints)
+                                    @if (context is TwitchPoints tp)
                                     {
-                                        <MudSelect T="string" @bind-Value="@(((TwitchPoints)context).Id)" Label="Reward"
-                                            AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+                                        <MudSelect T="string" @bind-Value="@tp.Id" Label="Reward" AnchorOrigin="Origin.BottomCenter"
+                                            Variant="Variant.Outlined">
                                             @foreach (CustomReward reward in TwitchRewards)
                                             {
                                                 <MudSelectItem Value="@(reward.Id)">
@@ -65,19 +66,20 @@
                                             }
                                         </MudSelect>
                                     }
-                                    <MudFab class="ml-auto" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeleteTrigger(context)" />
+                                    <MudIconButton class="ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                                        OnClick="() => DeleteTrigger(context)" />
                                 </div>
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
                 }
             </MudPaper>
-            <MudPaper Class="mt-3 pa-3" Outlined="true">
+            <MudPaper Class="mt-3 pa-3" Elevation="0" >
                 <div class="d-flex gap-3">
                     <MudText Typo="Typo.h5">Events</MudText>
                     <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
                         <ActivatorContent>
-                            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
                         </ActivatorContent>
                         <ChildContent>
                             @foreach (EventType eventType in (EventType[])Enum.GetValues(typeof(EventType)))
@@ -92,16 +94,18 @@
                     <MudTable Items="@Action.Events" Hover="true" class="mt-3" Outlined="true">
                         <RowTemplate>
                             <MudTd>
-                                <div class="d-flex align-center gap-5">
-                                    @context.Type
-                                    @if (context.Type == EventType.TTS)
-                                    {
-                                        <MudTextField @bind-Value="(context as TTS)!.Template" Label="Template" Variant="Variant.Outlined"></MudTextField>
-                                        <MudSlider @bind-Value="(context as TTS)!.Volume" Min="0" Max="1" Step="0.05" Variant="Variant.Filled" ValueLabel="true" class="flex-1">Volume</MudSlider>
-                                        <MudFab class="flex-none" Size="Size.Small" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlayArrow" OnClick="() => TTSPlay((context as TTS)!)" />
-                                    }
-                                    <MudFab class="flex-none ml-auto" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => DeleteEvent(context)" />
-                                </div>
+                                <MudText Class="pb-3">@context.Type:</MudText>
+                                @switch (context)
+                                {
+                                    case TTS tts:
+                                        <TTSConfig TTS="@tts" onDelete="() => DeleteEvent(context)" />
+                                        break;
+                                    case Sound sound:
+                                        <SoundConfig Sound="@sound" onDelete="() => DeleteEvent(context)" />
+                                        break;
+                                    default:
+                                        break;
+                                }
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -116,9 +120,6 @@
 </MudCard>
 
 @code {
-    [Inject]
-    public required IJSRuntime JS { get; set; }
-
     [Inject]
     public required Services.Config ConfigService { get; set; }
     [Inject]
@@ -196,19 +197,14 @@
     public async void Delete()
     {
         bool? result = await DialogService.ShowMessageBox(
-            "Warning",
-            "Are you sure?",
-            yesText: "Delete", cancelText: "Cancel");
+        "Warning",
+        "Are you sure?",
+        yesText: "Delete", cancelText: "Cancel");
 
         if (result == true)
         {
             ConfigService.DeleteAction(Action!.Id);
             NavigationManager.NavigateTo("/config/actions");
         };
-    }
-
-    public void TTSPlay(TTS tts)
-    {
-        JS.InvokeVoidAsync("TTS", tts.Template, tts.Volume);
     }
 }

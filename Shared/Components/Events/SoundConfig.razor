@@ -1,0 +1,68 @@
+<div class="d-flex align-center gap-5">
+    <MudSelect T="string" @bind-Value="@(Sound.File)" Label="File" AnchorOrigin="Origin.BottomCenter"
+        Variant="Variant.Outlined">
+        @foreach (string sound in Sounds)
+        {
+            <MudSelectItem Value="@(sound)">
+                @(Path.GetFileName(sound))
+            </MudSelectItem>
+        }
+    </MudSelect>
+    <MudFileUpload Class="mt-0" T="IBrowserFile" FilesChanged="OnSoundUpload">
+        <ButtonTemplate>
+            <MudButton Variant="Variant.Filled" HtmlTag="label" Color="Color.Primary"
+                StartIcon="@Icons.Material.Filled.CloudUpload" for="@context">
+                New File
+            </MudButton>
+        </ButtonTemplate>
+    </MudFileUpload>
+    <MudSlider @bind-Value="Sound.Volume" Min="0" Max="1" Step="0.05" Variant="Variant.Filled" ValueLabel="true"
+        class="flex-1">Volume</MudSlider>
+    <MudIconButton class="flex-none" Variant="Variant.Outlined" Color="Color.Primary"
+        Icon="@Icons.Material.Filled.PlayArrow" OnClick="() => Play()" />
+    <MudIconButton class="flex-none ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+        OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Inject]
+    public required IWebHostEnvironment Environment { get; set; }
+    [Inject]
+    public required IJSRuntime JS { get; set; }
+
+    [Parameter]
+    public required Data.Models.Sound Sound { get; set; }
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    protected List<string> Sounds { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        if (Directory.Exists(Environment.ContentRootPath + @"\UserData\uploads\sounds\"))
+        {
+            Sounds = new(Directory.GetFiles(Environment.ContentRootPath + @"\UserData\uploads\sounds\", "*.*",
+            SearchOption.AllDirectories));
+            Sounds = Sounds.ConvertAll<string>(path => Path.GetRelativePath(Environment.ContentRootPath + @"\UserData", path));
+        }
+    }
+
+    protected void Play()
+    {
+        JS.InvokeVoidAsync("PlayAudio", "/api/userdata/" + Sound.File, Sound.Volume);
+    }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+
+    protected async void OnSoundUpload(IBrowserFile file)
+    {
+        System.IO.Directory.CreateDirectory(Environment.ContentRootPath + @"\UserData\uploads\sounds\");
+        using FileStream fs = new(Environment.ContentRootPath + @"\UserData\uploads\sounds\" + file.Name, FileMode.Create);
+        await file.OpenReadStream().CopyToAsync(fs);
+        fs.Close();
+        Sounds.Add(@"uploads\sounds\" + file.Name);
+    }
+}

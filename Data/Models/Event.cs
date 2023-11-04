@@ -27,7 +27,7 @@ namespace Kanoe2.Data.Models
     {
         public override EventType Type { get { return EventType.Sound; } }
         public string File { get; set; } = default!;
-        public double Volume { get; set; }
+        public double Volume { get; set; } = 0.8;
 
         public override object Clone()
         {

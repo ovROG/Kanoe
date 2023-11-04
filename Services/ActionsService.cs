@@ -17,7 +17,7 @@ namespace Kanoe2.Services
 
         public ActionsService FireTrigger(Trigger trigger, Dictionary<string, string> varibles)
         {
-            List<Data.Models.Action> triggeredActions = config.GetActionsByTrigger(trigger);
+            List<Data.Models.Action> triggeredActions = config.GetActionsByTrigger(trigger); //TODO: Figure out how to implement rate limit
             foreach (Data.Models.Action action in triggeredActions)
             {
                 foreach (Event e in action.Events)

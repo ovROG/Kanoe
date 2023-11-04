@@ -1,0 +1,27 @@
+<div class="d-flex align-center gap-5">
+    <MudTextField @bind-Value="TTS.Template" Label="Template" Variant="Variant.Outlined"></MudTextField>
+    <MudSlider @bind-Value="TTS.Volume" Min="0" Max="1" Step="0.05" Variant="Variant.Filled" ValueLabel="true"
+        class="flex-1">Volume</MudSlider>
+    <MudIconButton class="flex-none" Variant="Variant.Outlined" Color="Color.Primary" Icon="@Icons.Material.Filled.PlayArrow" OnClick="() => Play()" />
+    <MudIconButton class="flex-none ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Inject]
+    public required IJSRuntime JS { get; set; }
+
+    [Parameter]
+    public required Data.Models.TTS TTS { get; set; }
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    protected void Play()
+    {
+        JS.InvokeVoidAsync("TTS", TTS.Template, TTS.Volume);
+    }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}
