@@ -27,6 +27,12 @@ namespace Kanoe2.Services
             public T? data { get; set; }
         }
 
+        struct APIError
+        {
+            public int errorID { get; set; }
+            public string message { get; set; }
+        }
+
         struct PortDiscoveryData
         {
             public bool active { get; set; }
@@ -118,9 +124,6 @@ namespace Kanoe2.Services
 
         private async Task SendRequest(string type, object? data = null)
         {
-            Console.WriteLine("send");
-            Console.WriteLine(type);
-
             if (type != "AuthenticationTokenRequest" && type != "AuthenticationRequest")
                 await isAuth.Task;
 
@@ -155,7 +158,6 @@ namespace Kanoe2.Services
 
         private async Task<T> GetResponce<T>()
         {
-            Console.WriteLine("get");
             byte[] receiveBuffer = new byte[10000];
             int offset = 0;
             int dataPerPacket = 1000;
@@ -177,7 +179,16 @@ namespace Kanoe2.Services
             }
 
             string responce = Encoding.UTF8.GetString(receiveBuffer, 0, offset);
-            return JsonSerializer.Deserialize<VTSResponse<T>>(responce).data;
+            try
+            {
+                return JsonSerializer.Deserialize<VTSResponse<T>>(responce).data;
+            }
+            catch
+            {
+                Console.WriteLine("UNABLE TO DESERIALIZE VTS RESPONCE TO:" + typeof(T));
+                Console.WriteLine(JsonSerializer.Deserialize<VTSResponse<APIError>>(responce).data);
+                throw;
+            }
         }
 
         //public
