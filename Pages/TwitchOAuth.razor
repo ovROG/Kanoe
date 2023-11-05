@@ -22,9 +22,10 @@
             {
                 string token = regex.Match(uri.Fragment).Value;
                 string login = await TwitchApiService.GetTwitchUserLogin(token);
-                string userId = await TwitchApiService.GetTwitchUserId(login);
-                ConfigService.SetTwitchToken(token).SetTwitchLogin(login).SetTwitchUserId(userId).Save();
+                ConfigService.SetTwitchToken(token).SetTwitchLogin(login);
                 TwitchApiService.SetToken(token);
+                string userId = await TwitchApiService.GetTwitchUserId(login);
+                ConfigService.SetTwitchUserId(userId).Save();
             }
         }
         IsReadyToRedirect.SetResult(true);
