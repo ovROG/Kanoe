@@ -1,11 +1,26 @@
 # Kanoe
 
-Something here later
+Tool for some interaction betewn Twitch, VTube Studio, and other things
 
-## Run
+## Usage
 
-- Instal Client libs
-  1. dotnet tool install -g Microsoft.Web.LibraryManager.Cli (for Libman in VS Code)
-  2. libman restore
-- Intsal NuGet libs 2. (dotnet restore)
-- Run (dotnet watch run --launch-profile http --non-interactive)
+Just run .exe
+
+|Argument | Default | Description          |
+|---------|---------|----------------------|
+| --port  | 5000    |Launch with given port|
+
+
+## Dev
+Instal client libraries:
+
+    libman restore
+    dotnet restore
+
+To add libman to VS Code use:
+
+    dotnet tool install -g Microsoft.Web.LibraryManager.Cli
+
+Run
+
+    dotnet watch run --launch-profile http --non-interactive
