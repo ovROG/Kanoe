@@ -74,7 +74,7 @@
                     </MudTable>
                 }
             </MudPaper>
-            <MudPaper Class="mt-3 pa-3" Elevation="0" >
+            <MudPaper Class="mt-3 pa-3" Elevation="0">
                 <div class="d-flex gap-3">
                     <MudText Typo="Typo.h5">Events</MudText>
                     <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
@@ -102,6 +102,9 @@
                                         break;
                                     case Sound sound:
                                         <SoundConfig Sound="@sound" onDelete="() => DeleteEvent(context)" />
+                                        break;
+                                    case VTSHotkey vtshotkey:
+                                        <VTSHotkeyConfig VTSHotkey="@vtshotkey" onDelete="() => DeleteEvent(context)" />
                                         break;
                                     default:
                                         break;
@@ -142,6 +145,7 @@
             RateLimit = Action.RateLimit.TotalMilliseconds;
         }
         TwitchRewards = await TwitchApiService.GetPointRewards();
+        StateHasChanged();
     }
 
     public void NewTrigger(TriggerType type)

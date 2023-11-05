@@ -1,0 +1,36 @@
+<div class="d-flex align-center gap-5">
+    <MudSelect T="string" @bind-Value="@(VTSHotkey.Id)" Label="Hotkey" AnchorOrigin="Origin.BottomCenter"
+        Variant="Variant.Outlined">
+        @foreach (Services.VTSService.Hotkey hotkey in Hotkeys)
+        {
+            <MudSelectItem Value="@(hotkey.hotkeyID)">
+                @hotkey.name
+            </MudSelectItem>
+        }
+    </MudSelect>
+    <MudIconButton class="flex-none ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+        OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Inject]
+    public required Services.VTSService VTSService { get; set; }
+
+    [Parameter]
+    public required Data.Models.VTSHotkey VTSHotkey { get; set; }
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    protected List<Services.VTSService.Hotkey> Hotkeys { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Hotkeys = await VTSService.RequestHotkeysList();
+        StateHasChanged();
+    }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}

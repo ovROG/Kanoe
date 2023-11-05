@@ -33,13 +33,19 @@
         TwitchEventsService.Connect();
 
         hubConnection.On<string, double>("TTS", TTS);
+        hubConnection.On<string, double>("Sound", Sound);
 
         await hubConnection.StartAsync();
     }
 
-    public async void TTS(string text, double volume)
+    public void TTS(string text, double volume)
     {
-        await JS.InvokeVoidAsync("TTS", text, volume);
+        JS.InvokeVoidAsync("TTS", text, volume);
+    }
+
+    public void Sound(string file, double volume)
+    {
+        JS.InvokeVoidAsync("PlayAudio", @"\api\userdata\" + file, volume);
     }
 
     public async ValueTask DisposeAsync()

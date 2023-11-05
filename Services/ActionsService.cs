@@ -7,11 +7,13 @@ namespace Kanoe2.Services
     public class ActionsService
     {
         private readonly Config config;
+        private readonly VTSService VTSService;
         private readonly IHubContext<Actions, IActionsClient> hubContext;
 
-        public ActionsService(Config configService, IHubContext<Actions, IActionsClient> hub)
+        public ActionsService(Config configService, VTSService vtsService, IHubContext<Actions, IActionsClient> hub)
         {
             config = configService;
+            VTSService = vtsService;
             hubContext = hub;
         }
 
@@ -28,12 +30,18 @@ namespace Kanoe2.Services
             return this;
         }
 
-        public void RunEvent(Event e, Dictionary<string, string> varibles)
+        public async void RunEvent(Event e, Dictionary<string, string> varibles)
         {
             switch (e)
             {
                 case TTS ts:
-                    hubContext.Clients.All.TTS(ts.FillTemplate(varibles), ts.Volume);
+                    await hubContext.Clients.All.TTS(ts.FillTemplate(varibles), ts.Volume);
+                    break;
+                case Sound sound:
+                    await hubContext.Clients.All.Sound(sound.File, sound.Volume);
+                    break;
+                case VTSHotkey vtshotkey:
+                    await VTSService.SendHotkey(vtshotkey.Id);
                     break;
                 default:
                     break;

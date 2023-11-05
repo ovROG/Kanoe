@@ -20,6 +20,8 @@ builder.Services.AddSingleton<TwitchApiService>();
 builder.Services.AddSingleton<TwitchChatService>();
 builder.Services.AddSingleton<TwitchEventsService>();
 
+builder.Services.AddSingleton<VTSService>();
+
 builder.Services.AddSingleton<ChatMockupService>();
 
 

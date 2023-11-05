@@ -9,11 +9,14 @@ namespace Kanoe2.Services
 
         private TwitchConfig TwitchConfig { get; set; }
 
+        private VTSConfig VTSConfig { get; set; }
+
         private List<Data.Models.Action> Actions { get; set; }
 
         public Config()
         {
             TwitchConfig = new TwitchConfig();
+            VTSConfig = new VTSConfig();
             Actions = new List<Data.Models.Action>();
             Load();
         }
@@ -110,17 +113,34 @@ namespace Kanoe2.Services
             return this;
         }
 
+        //VTS
+
+        public string? GetVTSToken()
+        {
+            return VTSConfig.Token;
+        }
+
+        public Config SetVTSToken(string token)
+        {
+            VTSConfig.Token = token;
+            return this;
+        }
+
         //etc
 
-        public Config Save()
+        public Config Save() //TODO: Make it less repetitive. Or even maybe separate it.
         {
             Directory.CreateDirectory(ConfigPath);
 
-            XmlSerializer TwitchSerializer = new(typeof(TwitchConfig)); //TODO: May be move to static in classes
+            XmlSerializer TwitchSerializer = new(typeof(TwitchConfig));
+            XmlSerializer VTSSerializer = new(typeof(VTSConfig));
             XmlSerializer ActionSerializer = new(typeof(List<Data.Models.Action>));
 
             using StreamWriter TwitchWriter = new(ConfigPath + "twitch.cfg");
             TwitchSerializer.Serialize(TwitchWriter, TwitchConfig);
+
+            using StreamWriter VTSWriter = new(ConfigPath + "vts.cfg");
+            VTSSerializer.Serialize(VTSWriter, VTSConfig);
 
             using StreamWriter ActionWriter = new(ConfigPath + "actions.cfg");
             ActionSerializer.Serialize(ActionWriter, Actions);
@@ -128,7 +148,7 @@ namespace Kanoe2.Services
             return this;
         }
 
-        public Config Load()
+        public Config Load() //TODO: Make it less repetitive. Or even maybe separate it.
         {
             if (File.Exists(ConfigPath + "twitch.cfg"))
             {
@@ -142,6 +162,21 @@ namespace Kanoe2.Services
                 {
                     TwitchConfig = new();
                     Console.WriteLine("UNABLE TO READ TWITCH CONFIG");
+                }
+            }
+
+            if (File.Exists(ConfigPath + "vts.cfg"))
+            {
+                try
+                {
+                    XmlSerializer serializer = new(typeof(VTSConfig));
+                    using StreamReader reader = new(ConfigPath + "vts.cfg");
+                    VTSConfig = (VTSConfig)serializer.Deserialize(reader)!;
+                }
+                catch
+                {
+                    VTSConfig = new();
+                    Console.WriteLine("UNABLE TO READ VTS CONFIG");
                 }
             }
 

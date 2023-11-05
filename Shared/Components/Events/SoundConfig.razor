@@ -49,7 +49,7 @@
 
     protected void Play()
     {
-        JS.InvokeVoidAsync("PlayAudio", "/api/userdata/" + Sound.File, Sound.Volume);
+        JS.InvokeVoidAsync("PlayAudio", @"\api\userdata\" + Sound.File, Sound.Volume);
     }
 
     protected async void onDeleteHandler()

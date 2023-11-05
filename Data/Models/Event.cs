@@ -62,7 +62,7 @@ namespace Kanoe2.Data.Models
     public class VTSHotkey : Event
     {
         public override EventType Type { get { return EventType.VTSHotkey; } }
-        public int Id { get; set; }
+        public string Id { get; set; } = default!;
 
         public override object Clone()
         {

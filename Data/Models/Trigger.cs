@@ -21,7 +21,7 @@ namespace Kanoe2.Data.Models
     public class TwitchPoints : Trigger
     {
         public override TriggerType Type { get { return TriggerType.TwitchPoints; } }
-        public string Id { get; set; } = default!;
+        public string Id { get; set; } = "";
 
         public override object Clone()
         {
