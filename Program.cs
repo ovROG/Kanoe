@@ -47,6 +47,7 @@ app.MapBlazorHub();
 
 app.MapHub<Chat>("/chathub");
 app.MapHub<Actions>("/actionshub");
+app.MapHub<Notifications>("/notificationshub");
 
 app.MapGet("/api/userdata/{*path}", async (HttpContext contex, UserFiles UF, string path) => await UF.GetLocalFile(contex, @$"\UserData\{path}"));
 

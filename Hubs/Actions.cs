@@ -10,6 +10,6 @@ namespace Kanoe2.Hubs
 
     public class Actions : Hub<IActionsClient>
     {
-        
+
     }
 }

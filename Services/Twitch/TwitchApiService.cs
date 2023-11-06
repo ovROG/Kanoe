@@ -1,8 +1,7 @@
-﻿using Kanoe2.Data.Models;
-using TwitchLib.Api;
-using TwitchLib.Api.Helix.Models.Users.GetUsers;
+﻿using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.ChannelPoints;
 using TwitchLib.Api.Helix.Models.ChannelPoints.GetCustomReward;
+using TwitchLib.Api.Helix.Models.Users.GetUsers;
 
 namespace Kanoe2.Services.Twitch
 {

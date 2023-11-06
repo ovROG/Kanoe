@@ -1,3 +1,5 @@
+using Kanoe2.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -79,19 +81,17 @@ namespace Kanoe2.Services
         //-----------
 
         private readonly Config config;
+        private readonly IHubContext<Notifications, INotificationsClient> hubContext;
 
         private readonly ClientWebSocket webSocet = new();
-        private readonly TaskCompletionSource<bool> isAuth = new();
+        private string? socetPort;
 
         //-----------
 
-        public VTSService(Config configService)
+        public VTSService(Config configService, IHubContext<Notifications, INotificationsClient> hub)
         {
             config = configService;
-            _ = Task.Run(() => DiscoverAPI()).ContinueWith(async (result) =>
-            {
-                await Auth();
-            });
+            hubContext = hub;
         }
 
         private async Task DiscoverAPI()
@@ -101,8 +101,8 @@ namespace Kanoe2.Services
             UdpClient udpServer = new();
             udpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             udpServer.Client.Bind(discoveryPort);
-            byte[] buffer = udpServer.Receive(ref discoveryPort);
-            string response = Encoding.UTF8.GetString(buffer);
+            UdpReceiveResult result = await udpServer.ReceiveAsync();
+            string response = Encoding.UTF8.GetString(result.Buffer);
 
             VTSResponse<PortDiscoveryData> data;
 
@@ -117,21 +117,47 @@ namespace Kanoe2.Services
                 return;
             }
 
-            var url = new Uri("ws://localhost:" + data.data.port.ToString());
-            await webSocet.ConnectAsync(url, CancellationToken.None);
+            socetPort = data.data.port.ToString();
             return;
         }
+        private async Task Connect()
+        {
+            var url = new Uri("ws://localhost:" + socetPort);
+            await webSocet.ConnectAsync(url, CancellationToken.None);
+        }
+        private async Task Auth()
+        {
+            if (string.IsNullOrEmpty(config.GetVTSToken()))
+            {
+                await hubContext.Clients.All.Notify("Please Allow Plugin in VTubeStudio", MudBlazor.Severity.Warning);
+                await SendRequest("AuthenticationTokenRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG" });
+                AuthenticationToken token = await GetResponce<AuthenticationToken>();
+                config.SetVTSToken(token.authenticationToken);
+                config.Save();
+            }
 
+            await SendRequest("AuthenticationRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG", authenticationToken = config.GetVTSToken() });
+            AuthenticationResponse auth = await GetResponce<AuthenticationResponse>();
+            if (!auth.authenticated)
+            {
+                Console.WriteLine("UNABLE TO AUTH TO VTS"); //TODO: Handle failed auth
+                return;
+            }
+        }
         private async Task SendRequest(string type, object? data = null)
         {
-            if (type != "AuthenticationTokenRequest" && type != "AuthenticationRequest")
-                await isAuth.Task;
-
             if (webSocet.State != WebSocketState.Open)
             {
-                Console.WriteLine("UNABLE TO SEND VTS REQUEST: SOCKET NOT OPEN");
-                Console.WriteLine("STATUS:" + webSocet.State);
-                return;
+                if (type != "AuthenticationTokenRequest" && type != "AuthenticationRequest")
+                {
+                    await DiscoverAPI();
+                    await Connect();
+                    await Auth(); // Recursive
+                }
+                else
+                {
+                    throw new Exception("Unable to Auth without connection");
+                }
             }
 
             VTSRequest<object> requestRaw = new()
@@ -155,7 +181,6 @@ namespace Kanoe2.Services
                 Console.WriteLine(e);
             }
         }
-
         private async Task<T> GetResponce<T>()
         {
             byte[] receiveBuffer = new byte[10000];
@@ -179,6 +204,7 @@ namespace Kanoe2.Services
             }
 
             string responce = Encoding.UTF8.GetString(receiveBuffer, 0, offset);
+            Console.WriteLine($"Responce: {responce}");
             try
             {
                 return JsonSerializer.Deserialize<VTSResponse<T>>(responce).data;
@@ -191,30 +217,7 @@ namespace Kanoe2.Services
             }
         }
 
-        //public
-
-        public async Task Auth()
-        {
-            if (String.IsNullOrEmpty(config.GetVTSToken()))
-            {
-                await SendRequest("AuthenticationTokenRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG" });
-                AuthenticationToken token = await GetResponce<AuthenticationToken>();
-                config.SetVTSToken(token.authenticationToken);
-                config.Save();
-            }
-            else
-            {
-                await SendRequest("AuthenticationRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG", authenticationToken = config.GetVTSToken() });
-                AuthenticationResponse auth = await GetResponce<AuthenticationResponse>();
-                if (!auth.authenticated)
-                {
-                    Console.WriteLine("UNABLE TO AUTH TO VTS"); //TODO: Handle failed auth
-                    isAuth.SetResult(false);
-                    return;
-                }
-            }
-            isAuth.SetResult(true);
-        }
+        //Public
 
         public async Task<List<Hotkey>> RequestHotkeysList()
         {
