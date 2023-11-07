@@ -124,7 +124,7 @@ namespace Kanoe2.Services
         }
         private async Task Connect()
         {
-            var url = new Uri("ws://localhost:" + socetPort);
+            Uri url = new("ws://localhost:" + socetPort);
             await webSocet.ConnectAsync(url, CancellationToken.None);
         }
         private async Task Auth()
@@ -151,6 +151,7 @@ namespace Kanoe2.Services
         }
         private async Task Send(string type, object? data = null)
         {
+            Console.WriteLine($"Send: {type}");
             if (webSocet.State != WebSocketState.Open)
             {
                 if (type != "AuthenticationTokenRequest" && type != "AuthenticationRequest")
@@ -173,7 +174,7 @@ namespace Kanoe2.Services
             };
 
             string requestJson = JsonSerializer.Serialize(requestRaw);
-            byte[] requestBuffer = Encoding.UTF8.GetBytes(requestJson);
+            ArraySegment<byte> requestBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(requestJson));
             try
             {
                 await webSocet.SendAsync(requestBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
@@ -181,6 +182,8 @@ namespace Kanoe2.Services
             catch (Exception e)
             {
                 Console.WriteLine("UNABLE TO SEND VTS REQUEST:");
+                Console.WriteLine(requestJson);
+                Console.WriteLine("\n");
                 Console.WriteLine(e);
             }
         }
@@ -221,6 +224,7 @@ namespace Kanoe2.Services
                 Console.WriteLine(e);
             }
             string responce = Encoding.UTF8.GetString(buffer, 0, offset);
+            Console.WriteLine($"Get: {responce}");
             try
             {
                 return JsonSerializer.Deserialize<VTSResponse<T>>(responce).data;
@@ -242,7 +246,7 @@ namespace Kanoe2.Services
         private async Task<T> MakeRequest<T>(string type, object? data = null)
         {
             await sendSemaphore.WaitAsync();
-            await Send(type);
+            await Send(type, data);
             T res = await GetResponce<T>();
             sendSemaphore.Release(1);
             return res;

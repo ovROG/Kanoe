@@ -59,7 +59,7 @@ namespace Kanoe2.Data.Models
         }
     }
 
-    public class VTSHotkey : Event
+    public class VTSHotkey : Event //TODO: Add direct expression toggle type
     {
         public override EventType Type { get { return EventType.VTSHotkey; } }
         public string Id { get; set; } = default!;
