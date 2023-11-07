@@ -86,6 +86,8 @@ namespace Kanoe2.Services
         private readonly ClientWebSocket webSocet = new();
         private string? socetPort;
 
+        private readonly SemaphoreSlim sendSemaphore = new(1, 1);
+
         //-----------
 
         public VTSService(Config configService, IHubContext<Notifications, INotificationsClient> hub)
@@ -127,16 +129,19 @@ namespace Kanoe2.Services
         }
         private async Task Auth()
         {
+            await DiscoverAPI();
+            await Connect();
+
             if (string.IsNullOrEmpty(config.GetVTSToken()))
             {
                 await hubContext.Clients.All.Notify("Please Allow Plugin in VTubeStudio", MudBlazor.Severity.Warning);
-                await SendRequest("AuthenticationTokenRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG" });
+                await Send("AuthenticationTokenRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG" });
                 AuthenticationToken token = await GetResponce<AuthenticationToken>();
                 config.SetVTSToken(token.authenticationToken);
                 config.Save();
             }
 
-            await SendRequest("AuthenticationRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG", authenticationToken = config.GetVTSToken() });
+            await Send("AuthenticationRequest", new { pluginName = "Kanoe", pluginDeveloper = "ovROG", authenticationToken = config.GetVTSToken() });
             AuthenticationResponse auth = await GetResponce<AuthenticationResponse>();
             if (!auth.authenticated)
             {
@@ -144,14 +149,12 @@ namespace Kanoe2.Services
                 return;
             }
         }
-        private async Task SendRequest(string type, object? data = null)
+        private async Task Send(string type, object? data = null)
         {
             if (webSocet.State != WebSocketState.Open)
             {
                 if (type != "AuthenticationTokenRequest" && type != "AuthenticationRequest")
                 {
-                    await DiscoverAPI();
-                    await Connect();
                     await Auth(); // Recursive
                 }
                 else
@@ -183,18 +186,33 @@ namespace Kanoe2.Services
         }
         private async Task<T> GetResponce<T>()
         {
-            byte[] receiveBuffer = new byte[10000];
+            int bufferSize = 1000;
+            byte[] buffer = new byte[bufferSize];
             int offset = 0;
-            int dataPerPacket = 1000;
+            int free = buffer.Length;
             try
             {
                 while (true)
                 {
-                    ArraySegment<byte> bytesReceived = new(receiveBuffer, offset, dataPerPacket);
-                    WebSocketReceiveResult result = await webSocet.ReceiveAsync(bytesReceived, CancellationToken.None);
+                    WebSocketReceiveResult result = await webSocet.ReceiveAsync(new ArraySegment<byte>(buffer, offset, free), CancellationToken.None);
                     offset += result.Count;
+                    free -= result.Count;
+
                     if (result.EndOfMessage)
                         break;
+
+                    if (free == 0)
+                    {
+                        int newSize = buffer.Length + bufferSize;
+                        if (newSize > 200000)
+                        {
+                            throw new Exception("VTS RESPONCE IS TOO BIG");
+                        }
+                        byte[] newBuffer = new byte[newSize];
+                        Array.Copy(buffer, 0, newBuffer, 0, offset);
+                        buffer = newBuffer;
+                        free = buffer.Length - offset;
+                    }
                 }
             }
             catch (Exception e)
@@ -202,9 +220,7 @@ namespace Kanoe2.Services
                 Console.WriteLine("UNABLE TO RECEIVE VTS RESPONCE");
                 Console.WriteLine(e);
             }
-
-            string responce = Encoding.UTF8.GetString(receiveBuffer, 0, offset);
-            Console.WriteLine($"Responce: {responce}");
+            string responce = Encoding.UTF8.GetString(buffer, 0, offset);
             try
             {
                 return JsonSerializer.Deserialize<VTSResponse<T>>(responce).data;
@@ -212,24 +228,37 @@ namespace Kanoe2.Services
             catch
             {
                 Console.WriteLine("UNABLE TO DESERIALIZE VTS RESPONCE TO:" + typeof(T));
-                Console.WriteLine(JsonSerializer.Deserialize<VTSResponse<APIError>>(responce).data);
+                try
+                {
+                    Console.WriteLine(JsonSerializer.Deserialize<VTSResponse<APIError>>(responce).data);
+                }
+                catch
+                {
+                    Console.WriteLine(responce);
+                }
                 throw;
             }
+        }
+        private async Task<T> MakeRequest<T>(string type, object? data = null)
+        {
+            await sendSemaphore.WaitAsync();
+            await Send(type);
+            T res = await GetResponce<T>();
+            sendSemaphore.Release(1);
+            return res;
         }
 
         //Public
 
         public async Task<List<Hotkey>> RequestHotkeysList()
         {
-            await SendRequest("HotkeysInCurrentModelRequest");
-            HotkeysResponce hotkeys = await GetResponce<HotkeysResponce>();
+            HotkeysResponce hotkeys = await MakeRequest<HotkeysResponce>("HotkeysInCurrentModelRequest");
             return new List<Hotkey>(hotkeys.availableHotkeys);
         }
 
         public async Task SendHotkey(string id)
         {
-            await SendRequest("HotkeyTriggerRequest", new { hotkeyID = id });
-            await GetResponce<HotkeyTriggerResponse>();
+            await MakeRequest<HotkeyTriggerResponse>("HotkeyTriggerRequest", new { hotkeyID = id });
         }
     }
 }
