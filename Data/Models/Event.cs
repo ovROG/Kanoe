@@ -8,11 +8,13 @@ namespace Kanoe2.Data.Models
         Sound,
         TTS,
         VTSHotkey,
+        VTSExpression
     }
 
     [XmlInclude(typeof(Sound))]
     [XmlInclude(typeof(TTS))]
     [XmlInclude(typeof(VTSHotkey))]
+    [XmlInclude(typeof(VTSExpression))]
     public abstract class Event : ICloneable
     {
         public abstract EventType Type { get; }
@@ -59,10 +61,29 @@ namespace Kanoe2.Data.Models
         }
     }
 
-    public class VTSHotkey : Event //TODO: Add direct expression toggle type
+    public class VTSHotkey : Event
     {
         public override EventType Type { get { return EventType.VTSHotkey; } }
         public string Id { get; set; } = default!;
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
+    }
+
+    public class VTSExpression : Event
+    {
+        public override EventType Type { get { return EventType.VTSExpression; } }
+
+        public enum State
+        {
+            True,
+            False,
+            Invert
+        }
+        public string File { get; set; } = default!;
+        public State Active { get; set; } = State.True;
 
         public override object Clone()
         {

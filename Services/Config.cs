@@ -120,7 +120,7 @@ namespace Kanoe2.Services
             return VTSConfig.Token;
         }
 
-        public Config SetVTSToken(string token)
+        public Config SetVTSToken(string? token)
         {
             VTSConfig.Token = token;
             return this;

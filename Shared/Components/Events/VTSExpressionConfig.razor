@@ -1,0 +1,51 @@
+﻿<div class="d-flex align-center gap-5">
+    @if (Expressions == null)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudSelect T="string" @bind-Value="@(VTSExpression.File)" Label="File" AnchorOrigin="Origin.BottomCenter"
+                   Variant="Variant.Outlined">
+            @foreach (Services.VTSService.Expression expression in Expressions)
+            {
+                <MudSelectItem Value="@(expression.file)">
+                    @expression.name
+                </MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="Data.Models.VTSExpression.State" @bind-Value="@(VTSExpression.Active)" Label="File" AnchorOrigin="Origin.BottomCenter"
+                   Variant="Variant.Outlined">
+            @foreach (Data.Models.VTSExpression.State state in (Data.Models.VTSExpression.State[])Enum.GetValues(typeof(Data.Models.VTSExpression.State)))
+            {
+                <MudSelectItem Value="@(state)">
+                    @state
+                </MudSelectItem>
+            }
+        </MudSelect>
+    }
+    <MudIconButton class="flex-none ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                   OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Inject]
+    public required Services.VTSService VTSService { get; set; }
+
+    [Parameter]
+    public required Data.Models.VTSExpression VTSExpression { get; set; }
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    protected List<Services.VTSService.Expression>? Expressions { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Expressions = await VTSService.RequestExpressionList();
+    }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}

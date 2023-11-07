@@ -106,6 +106,9 @@
                                     case VTSHotkey vtshotkey:
                                         <VTSHotkeyConfig VTSHotkey="@vtshotkey" onDelete="() => DeleteEvent(context)" />
                                         break;
+                                    case VTSExpression vtsexpression:
+                                        <VTSExpressionConfig VTSExpression="@vtsexpression" onDelete="() => DeleteEvent(context)" />
+                                        break;
                                     default:
                                         break;
                                 }
@@ -180,6 +183,9 @@
                 break;
             case EventType.VTSHotkey:
                 newEvent = new Data.Models.VTSHotkey();
+                break;
+            case EventType.VTSExpression:
+                newEvent = new Data.Models.VTSExpression();
                 break;
             default:
                 throw new ArgumentException("No type found", nameof(type));

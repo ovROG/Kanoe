@@ -43,6 +43,9 @@ namespace Kanoe2.Services
                 case VTSHotkey vtshotkey:
                     await VTSService.SendHotkey(vtshotkey.Id);
                     break;
+                case VTSExpression vtsexpression:
+                    await VTSService.SendExpression(vtsexpression.File, vtsexpression.Active);
+                    break;
                 default:
                     break;
             }

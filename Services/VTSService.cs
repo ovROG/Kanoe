@@ -1,3 +1,4 @@
+using Kanoe2.Data.Models;
 using Kanoe2.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Net;
@@ -10,6 +11,7 @@ namespace Kanoe2.Services
 {
     public class VTSService
     {
+        //TODO: Probably better to move it somewhere
         struct VTSResponse<T>
         {
             public string apiName { get; set; }
@@ -78,6 +80,27 @@ namespace Kanoe2.Services
             public string hotkeyID { get; set; }
         }
 
+        public struct Expression
+        {
+            public string name { get; set; }
+            public string file { get; set; }
+            public bool active { get; set; }
+            public bool deactivateWhenKeyIsLetGo { get; set; }
+            public bool autoDeactivateAfterSeconds { get; set; }
+            public double secondsRemaining { get; set; }
+            public double secondsSinceLastActive { get; set; }
+            public string[] usedInHotkeys { get; set; } //TODO: change to type if delailed
+            public string[] parameters { get; set; } //TODO: change to type if delailed
+        }
+
+        struct ExpressionStateResponce
+        {
+            public bool modelLoaded { get; set; }
+            public string modelName { get; set; }
+            public string modelID { get; set; }
+            public Expression[] expressions { get; set; }
+        }
+
         //-----------
 
         private readonly Config config;
@@ -129,9 +152,6 @@ namespace Kanoe2.Services
         }
         private async Task Auth()
         {
-            await DiscoverAPI();
-            await Connect();
-
             if (string.IsNullOrEmpty(config.GetVTSToken()))
             {
                 await hubContext.Clients.All.Notify("Please Allow Plugin in VTubeStudio", MudBlazor.Severity.Warning);
@@ -145,7 +165,9 @@ namespace Kanoe2.Services
             AuthenticationResponse auth = await GetResponce<AuthenticationResponse>();
             if (!auth.authenticated)
             {
-                Console.WriteLine("UNABLE TO AUTH TO VTS"); //TODO: Handle failed auth
+                Console.WriteLine("UNABLE AUTH TO VTS WITH TOKEN REQUESTING NEW TOKEN");
+                config.SetVTSToken(null);
+                await Auth();
                 return;
             }
         }
@@ -156,6 +178,8 @@ namespace Kanoe2.Services
             {
                 if (type != "AuthenticationTokenRequest" && type != "AuthenticationRequest")
                 {
+                    await DiscoverAPI();
+                    await Connect();
                     await Auth(); // Recursive
                 }
                 else
@@ -243,13 +267,21 @@ namespace Kanoe2.Services
                 throw;
             }
         }
-        private async Task<T> MakeRequest<T>(string type, object? data = null)
+        private async Task<T?> MakeRequest<T>(string type, object? data = null)
         {
             await sendSemaphore.WaitAsync();
-            await Send(type, data);
-            T res = await GetResponce<T>();
-            sendSemaphore.Release(1);
-            return res;
+            try
+            {
+                await Send(type, data);
+                T res = await GetResponce<T>();
+                sendSemaphore.Release(1);
+                return res;
+            }
+            catch
+            {
+                sendSemaphore.Release(1);
+                return default;
+            }
         }
 
         //Public
@@ -263,6 +295,33 @@ namespace Kanoe2.Services
         public async Task SendHotkey(string id)
         {
             await MakeRequest<HotkeyTriggerResponse>("HotkeyTriggerRequest", new { hotkeyID = id });
+        }
+
+        public async Task<List<Expression>> RequestExpressionList()
+        {
+            ExpressionStateResponce expression = await MakeRequest<ExpressionStateResponce>("ExpressionStateRequest");
+            return new List<Expression>(expression.expressions);
+        }
+
+        public async Task SendExpression(string file, VTSExpression.State state = VTSExpression.State.True)
+        {
+            bool active = true;
+            bool current = (await MakeRequest<ExpressionStateResponce>("ExpressionStateRequest", new { expressionFile = file })).expressions[0].active;
+            switch (state)
+            {
+                case VTSExpression.State.Invert:
+                    active = !current;
+                    break;
+                case VTSExpression.State.False:
+                    active = false;
+                    break;
+                default:
+                    break;
+            }
+            if (active != current)
+            {
+                await MakeRequest<dynamic>("ExpressionActivationRequest", new { expressionFile = file, active });
+            }
         }
     }
 }
