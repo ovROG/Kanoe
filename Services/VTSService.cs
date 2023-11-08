@@ -106,7 +106,7 @@ namespace Kanoe2.Services
         private readonly Config config;
         private readonly IHubContext<Notifications, INotificationsClient> hubContext;
 
-        private readonly ClientWebSocket webSocet = new();
+        private ClientWebSocket webSocket = new();
         private string? socetPort;
 
         private readonly SemaphoreSlim sendSemaphore = new(1, 1);
@@ -125,30 +125,48 @@ namespace Kanoe2.Services
 
             UdpClient udpServer = new();
             udpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            udpServer.Client.Bind(discoveryPort);
-            UdpReceiveResult result = await udpServer.ReceiveAsync();
-            string response = Encoding.UTF8.GetString(result.Buffer);
-
-            VTSResponse<PortDiscoveryData> data;
 
             try
             {
+                udpServer.Client.Bind(discoveryPort);
+                UdpReceiveResult result = await udpServer.ReceiveAsync();
+                string response = Encoding.UTF8.GetString(result.Buffer);
+                udpServer.Close();
+
+                VTSResponse<PortDiscoveryData> data;
                 data = JsonSerializer.Deserialize<VTSResponse<PortDiscoveryData>>(response);
+                socetPort = data.data.port.ToString();
             }
             catch (Exception e)
             {
-                Console.WriteLine("UNABLE TO DESERIALIZE VTS DISCOVERY RESPONCE");
+                Console.WriteLine("UNABLE TO DISCOVER PORT");
                 Console.WriteLine(e);
                 return;
             }
-
-            socetPort = data.data.port.ToString();
             return;
         }
         private async Task Connect()
         {
-            Uri url = new("ws://localhost:" + socetPort);
-            await webSocet.ConnectAsync(url, CancellationToken.None);
+            if (socetPort != null)
+            {
+                try
+                {
+                    Uri url = new("ws://localhost:" + socetPort);
+                    webSocket.Dispose();
+                    webSocket = new();
+                    await webSocket.ConnectAsync(url, CancellationToken.None);
+                }
+                catch (Exception e)
+                {
+
+                    throw new Exception("UNABLE TO CONNECT TO VTS PORT\n" + e.Message);
+
+                }
+            }
+            else
+            {
+                Console.WriteLine("UNABLE TO CONNECT WITHOUT PORT");
+            }
         }
         private async Task Auth()
         {
@@ -165,28 +183,14 @@ namespace Kanoe2.Services
             AuthenticationResponse auth = await GetResponce<AuthenticationResponse>();
             if (!auth.authenticated)
             {
-                Console.WriteLine("UNABLE AUTH TO VTS WITH TOKEN REQUESTING NEW TOKEN");
+                Console.WriteLine("UNABLE AUTH TO VTS WITH CURRENT TOKEN REQUESTING NEW TOKEN");
                 config.SetVTSToken(null);
-                await Auth();
-                return;
+                throw new Exception("UNABLE AUTH TO VTS");
             }
         }
         private async Task Send(string type, object? data = null)
         {
             Console.WriteLine($"Send: {type}");
-            if (webSocet.State != WebSocketState.Open)
-            {
-                if (type != "AuthenticationTokenRequest" && type != "AuthenticationRequest")
-                {
-                    await DiscoverAPI();
-                    await Connect();
-                    await Auth(); // Recursive
-                }
-                else
-                {
-                    throw new Exception("Unable to Auth without connection");
-                }
-            }
 
             VTSRequest<object> requestRaw = new()
             {
@@ -201,7 +205,7 @@ namespace Kanoe2.Services
             ArraySegment<byte> requestBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(requestJson));
             try
             {
-                await webSocet.SendAsync(requestBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                await webSocket.SendAsync(requestBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
             }
             catch (Exception e)
             {
@@ -211,7 +215,7 @@ namespace Kanoe2.Services
                 Console.WriteLine(e);
             }
         }
-        private async Task<T> GetResponce<T>()
+        private async Task<T?> GetResponce<T>()
         {
             int bufferSize = 1000;
             byte[] buffer = new byte[bufferSize];
@@ -221,7 +225,7 @@ namespace Kanoe2.Services
             {
                 while (true)
                 {
-                    WebSocketReceiveResult result = await webSocet.ReceiveAsync(new ArraySegment<byte>(buffer, offset, free), CancellationToken.None);
+                    WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, free), CancellationToken.None);
                     offset += result.Count;
                     free -= result.Count;
 
@@ -264,32 +268,43 @@ namespace Kanoe2.Services
                 {
                     Console.WriteLine(responce);
                 }
-                throw;
+                return default;
             }
         }
         private async Task<T?> MakeRequest<T>(string type, object? data = null)
         {
+            if (webSocket.State != WebSocketState.Open)
+            {
+                try
+                {
+                    await DiscoverAPI();
+                    await Connect();
+                    await Auth();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return default;
+                }
+            }
+
             await sendSemaphore.WaitAsync();
-            try
-            {
-                await Send(type, data);
-                T res = await GetResponce<T>();
-                sendSemaphore.Release(1);
-                return res;
-            }
-            catch
-            {
-                sendSemaphore.Release(1);
-                return default;
-            }
+            await Send(type, data);
+            T? res = await GetResponce<T>();
+            sendSemaphore.Release(1);
+            return res;
         }
 
         //Public
 
         public async Task<List<Hotkey>> RequestHotkeysList()
         {
-            HotkeysResponce hotkeys = await MakeRequest<HotkeysResponce>("HotkeysInCurrentModelRequest");
-            return new List<Hotkey>(hotkeys.availableHotkeys);
+            HotkeysResponce? hotkeys = await MakeRequest<HotkeysResponce?>("HotkeysInCurrentModelRequest");
+            if (!hotkeys.HasValue)
+            {
+                return new List<Hotkey>();
+            }
+            return new List<Hotkey>(hotkeys.Value.availableHotkeys);
         }
 
         public async Task SendHotkey(string id)
@@ -299,18 +314,28 @@ namespace Kanoe2.Services
 
         public async Task<List<Expression>> RequestExpressionList()
         {
-            ExpressionStateResponce expression = await MakeRequest<ExpressionStateResponce>("ExpressionStateRequest");
-            return new List<Expression>(expression.expressions);
+            ExpressionStateResponce? expression = await MakeRequest<ExpressionStateResponce?>("ExpressionStateRequest");
+            if (!expression.HasValue)
+            {
+                return new List<Expression>();
+            }
+            return new List<Expression>(expression.Value.expressions);
         }
 
         public async Task SendExpression(string file, VTSExpression.State state = VTSExpression.State.True)
         {
             bool active = true;
-            bool current = (await MakeRequest<ExpressionStateResponce>("ExpressionStateRequest", new { expressionFile = file })).expressions[0].active;
+
+            ExpressionStateResponce? current = await MakeRequest<ExpressionStateResponce?>("ExpressionStateRequest", new { expressionFile = file });
+            if (!current.HasValue || current.Value.expressions.Length == 0)
+            {
+                return;
+            }
+
             switch (state)
             {
                 case VTSExpression.State.Invert:
-                    active = !current;
+                    active = !current.Value.expressions[0].active;
                     break;
                 case VTSExpression.State.False:
                     active = false;
@@ -318,7 +343,8 @@ namespace Kanoe2.Services
                 default:
                     break;
             }
-            if (active != current)
+
+            if (active != current.Value.expressions[0].active)
             {
                 await MakeRequest<dynamic>("ExpressionActivationRequest", new { expressionFile = file, active });
             }
