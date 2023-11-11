@@ -14,6 +14,10 @@ namespace Kanoe2.Services.Twitch
         {
             api = new TwitchAPI();
             config = configService;
+            if(_config["twitchid"] != null)
+            {
+                configService.SetTwitchId(_config["twitchid"]!);
+            }
             api.Settings.ClientId = configService.GetTwitchId() ?? _config["TwitchAppID"]!;
             api.Settings.AccessToken = configService.GetTwitchToken();
         }

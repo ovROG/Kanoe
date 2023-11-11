@@ -3,19 +3,22 @@
 ### Stream Helper Tool
 
 - Chat with custom CSS
-- Event system (for interactions between):
+- Event system *(for interactions between)*:
     - Twitch
     - VTube Studio
     - Soundboard & TTS
+
+> [!NOTE]
+> This my first attempt at creating something big with C# and Blazor so any help is welcome :)
 
 ## Run
 
 Just run .exe
 
-| Argument    | Default | Description                      |
-|-------------|---------|----------------------------------|
-| --port      | 5000    | Launch with given port           |
-| --twitchid  | null    | Use custom Client ID from Twitch |
+| Argument      | Default | Description                      |
+|---------------|---------|----------------------------------|
+| `--port`      | `5000`  | *Launch with given port*                                        |
+| `--twitchid`  | `null`  | *Set custom Client ID for Twitch* **(Will be saved in config)** |
 
 Then you can open `http://localhost:5000/` for configuration
 
