@@ -10,11 +10,11 @@ namespace Kanoe2.Services.Twitch
         private readonly TwitchAPI api;
         private readonly Config config;
 
-        public TwitchApiService(Config configService)
+        public TwitchApiService(Config configService, IConfiguration _config)
         {
             api = new TwitchAPI();
             config = configService;
-            api.Settings.ClientId = configService.GetTwitchId();
+            api.Settings.ClientId = configService.GetTwitchId() ?? _config["TwitchAppID"]!;
             api.Settings.AccessToken = configService.GetTwitchToken();
         }
 
