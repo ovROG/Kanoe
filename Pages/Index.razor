@@ -1,1 +1,27 @@
 ﻿@page "/"
+
+<div class="d-flex gap-3">
+    <MudField Label="Chat url" Variant="Variant.Filled">
+        @($"{Navigation.BaseUri}chat/{login}{(limit > 0 ? $"?limit={limit}" : "")}")
+    </MudField>
+    <MudNumericField Class="flex-grow-0" @bind-Value="limit" Label="limit" Variant="Variant.Filled" Min="0" />
+</div>
+
+<MudField Label="Alerts url" Variant="Variant.Filled">
+    @($"{Navigation.BaseUri}alerts")
+</MudField>
+
+@code {
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    [Inject]
+    public required Services.Config ConfigService { get; set; }
+
+    string login = "{channel}";
+    int limit { get; set; }
+
+    protected override void OnInitialized()
+    {
+        login = ConfigService.GetTwitchLogin() ?? "{channel}";
+    }
+}
