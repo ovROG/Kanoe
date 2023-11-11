@@ -12,7 +12,7 @@
 <MudLayout>
     <CascadingValue Value="@_isDarkMode" Name="IsDarkMode">
         <MudAppBar>
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
             Kanoe
             <MudSpacer />
             <MudToggleIconButton @bind-Toggled="@_isDarkMode"
@@ -23,7 +23,7 @@
             <NavMenu />
         </MudDrawer>
         <MudMainContent>
-            <MudContainer MaxWidth="MaxWidth.Medium">
+            <MudContainer Class="px-5 pt-5">
                 @Body
             </MudContainer>
         </MudMainContent>
@@ -49,7 +49,7 @@
             {
                 Default = new Default()
                 {
-                    FontFamily = new[] { "Play", "Roboto", "Helvetica", "Arial", "sans-serif" }
+                    FontFamily = new[] { "K2D", "Play", "Roboto", "Helvetica", "Arial", "sans-serif" }
                 }
             }
         };

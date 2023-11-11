@@ -7,123 +7,126 @@
 
 @page "/config/actions/{id}"
 
-<MudCard Class="mt-3">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <div class="d-flex align-baseline gap-5">
-                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/config/actions" />
-                <MudText Typo="Typo.h4" class="d-flex align-baseline gap-3"> <b>Action</b>
-                    <MudText>(@(Id))</MudText>
-                </MudText>
-                <MudIconButton class="ml-auto" Color="Color.Error" Disabled="@(Action == null)"
-                    Icon="@Icons.Material.Filled.Delete" OnClick="Delete" />
-                <MudIconButton Color="Color.Success" Disabled="@(Action == null)" Icon="@Icons.Material.Filled.Save"
-                    OnClick="Save" />
-            </div>
-        </CardHeaderContent>
-    </MudCardHeader>
-    <MudCardContent>
-        @if (Action != null)
-        {
-            <div class="d-flex pt-3 align-content-center gap-5">
-                <MudTextField @bind-Value="@Action.Name" Label="Name" Variant="Variant.Text" />
-                <MudNumericField @bind-Value="@RateLimit" Label="RateLimit" Variant="Variant.Text" Min="0"
-                    Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" Disabled />
-                <MudSwitch @bind-Checked="@Action.AutoDisable" Label="Auto Disable" Color="Color.Primary"
+
+<div class="d-flex align-baseline gap-5">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/config/actions" />
+    <MudText Typo="Typo.h4" class="d-flex align-baseline gap-3">
+        <b>Action</b>
+        <MudText>(@(Id))</MudText>
+    </MudText>
+    <MudIconButton class="ml-auto" Color="Color.Error" Disabled="@(Action == null)"
+                   Icon="@Icons.Material.Filled.Delete" OnClick="Delete" />
+    <MudIconButton Color="Color.Success" Disabled="@(Action == null)" Icon="@Icons.Material.Filled.Save"
+                   OnClick="Save" />
+</div>
+
+@if (Action != null)
+{
+    <div class="d-flex pt-3 align-content-center gap-5">
+        <MudTextField @bind-Value="@Action.Name" Label="Name" Variant="Variant.Text" />
+        <MudNumericField @bind-Value="@RateLimit" Label="RateLimit" Variant="Variant.Text" Min="0"
+                         Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" Disabled />
+         <MudSwitch @bind-Checked="@Action.AutoDisable" Label="Auto Disable" Color="Color.Primary"
                     class="justify-end" Disabled />
-            </div>
-            <MudPaper Class="mt-3 pa-3" Elevation="0">
-                <div class="d-flex gap-3">
-                    <MudText Typo="Typo.h5">Triggers</MudText>
-                    <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
-                        <ActivatorContent>
-                            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (TriggerType triggerType in (TriggerType[])Enum.GetValues(typeof(TriggerType)))
-                            {
-                                <MudMenuItem OnClick="() => NewTrigger(triggerType)">@triggerType</MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
-                </div>
-                @if (Action.Triggers.Count > 0)
-                {
-                    <MudTable Items="@Action.Triggers" Hover="true" class="mt-3" Outlined="true">
-                        <RowTemplate>
-                            <MudTd>
-                                <div class="d-flex align-center gap-5">
-                                    @context.Type
-                                    @if (context is TwitchPoints tp)
-                                    {
-                                        <MudSelect T="string" @bind-Value="@tp.Id" Label="Reward" AnchorOrigin="Origin.BottomCenter"
-                                            Variant="Variant.Outlined">
-                                            @foreach (CustomReward reward in TwitchRewards)
-                                            {
-                                                <MudSelectItem Value="@(reward.Id)">
-                                                    @reward.Title
-                                                </MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    }
-                                    <MudIconButton class="ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
-                                        OnClick="() => DeleteTrigger(context)" />
-                                </div>
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-            </MudPaper>
-            <MudPaper Class="mt-3 pa-3" Elevation="0">
-                <div class="d-flex gap-3">
-                    <MudText Typo="Typo.h5">Events</MudText>
-                    <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
-                        <ActivatorContent>
-                            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (EventType eventType in (EventType[])Enum.GetValues(typeof(EventType)))
-                            {
-                                <MudMenuItem OnClick="() => NewEvent(eventType)">@eventType</MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
-                </div>
-                @if (Action.Events.Count > 0)
-                {
-                    <MudTable Items="@Action.Events" Hover="true" class="mt-3" Outlined="true">
-                        <RowTemplate>
-                            <MudTd>
-                                <MudText Class="pb-3">@context.Type:</MudText>
-                                @switch (context)
-                                {
-                                    case TTS tts:
-                                        <TTSConfig TTS="@tts" onDelete="() => DeleteEvent(context)" />
-                                        break;
-                                    case Sound sound:
-                                        <SoundConfig Sound="@sound" onDelete="() => DeleteEvent(context)" />
-                                        break;
-                                    case VTSHotkey vtshotkey:
-                                        <VTSHotkeyConfig VTSHotkey="@vtshotkey" onDelete="() => DeleteEvent(context)" />
-                                        break;
-                                    case VTSExpression vtsexpression:
-                                        <VTSExpressionConfig VTSExpression="@vtsexpression" onDelete="() => DeleteEvent(context)" />
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-            </MudPaper>
-        }
-        else
+     </div>
+
+    <div class="mt-3 pa-3">
+
+        <div class="d-flex gap-3">
+            <MudText Typo="Typo.h5">Triggers</MudText>
+            <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
+                <ActivatorContent>
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                </ActivatorContent>
+                <ChildContent>
+                    @foreach (TriggerType triggerType in (TriggerType[])Enum.GetValues(typeof(TriggerType)))
+                    {
+                        <MudMenuItem OnClick="() => NewTrigger(triggerType)">@triggerType</MudMenuItem>
+                    }
+                </ChildContent>
+            </MudMenu>
+        </div>
+
+        @if (Action.Triggers.Count > 0)
         {
-            <MudText>No Action With id: <b>@Id</b></MudText>
+            <MudTable Items="@Action.Triggers" Hover="true" class="mt-3" Outlined="true">
+                <RowTemplate>
+                    <MudTd>
+                        <div class="d-flex align-center gap-5">
+                            @context.Type
+                            @if (context is TwitchPoints tp)
+                            {
+                                <MudSelect T="string" @bind-Value="@tp.Id" Label="Reward" AnchorOrigin="Origin.BottomCenter"
+                                           Variant="Variant.Outlined">
+                                    @foreach (CustomReward reward in TwitchRewards)
+                                    {
+                                        <MudSelectItem Value="@(reward.Id)">
+                                            @reward.Title
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudIconButton class="ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                                           OnClick="() => DeleteTrigger(context)" />
+                        </div>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
         }
-    </MudCardContent>
-</MudCard>
+    </div>
+
+    <div class="mt-3 pa-3">
+
+        <div class="d-flex gap-3">
+            <MudText Typo="Typo.h5">Events</MudText>
+            <MudMenu AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft">
+                <ActivatorContent>
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                </ActivatorContent>
+                <ChildContent>
+                    @foreach (EventType eventType in (EventType[])Enum.GetValues(typeof(EventType)))
+                    {
+                        <MudMenuItem OnClick="() => NewEvent(eventType)">@eventType</MudMenuItem>
+                    }
+                </ChildContent>
+            </MudMenu>
+        </div>
+
+        @if (Action.Events.Count > 0)
+        {
+            <MudTable Items="@Action.Events" Hover="true" class="mt-3" Outlined="true">
+                <RowTemplate>
+                    <MudTd>
+                        <MudText Class="pb-3">@context.Type:</MudText>
+                        @switch (context)
+                        {
+                            case TTS tts:
+                                <TTSConfig TTS="@tts" onDelete="() => DeleteEvent(context)" />
+                                break;
+                            case Sound sound:
+                                <SoundConfig Sound="@sound" onDelete="() => DeleteEvent(context)" />
+                                break;
+                            case VTSHotkey vtshotkey:
+                                <VTSHotkeyConfig VTSHotkey="@vtshotkey" onDelete="() => DeleteEvent(context)" />
+                                break;
+                            case VTSExpression vtsexpression:
+                                <VTSExpressionConfig VTSExpression="@vtsexpression" onDelete="() => DeleteEvent(context)" />
+                                break;
+                            default:
+                                break;
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+
+    </div>
+}
+else
+{
+    <MudText>No Action With id: <b>@Id</b></MudText>
+}
+
 
 @code {
     [Inject]

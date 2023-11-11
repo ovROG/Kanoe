@@ -2,31 +2,21 @@
 @using Kanoe2.Data.Models
 @using Microsoft.AspNetCore.WebUtilities
 
-<MudCard Class="mt-3">
 
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h4"> <b>General Settings</b></MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
+<div class="d-flex align-center">
+    <MudText>Twitch Auth Status:</MudText>
+    @if (ConfigService.GetTwitchToken() != null)
+    {
+        <MudChip Color="Color.Success" Size="Size.Small">Active</MudChip>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto" StartIcon="@Icons.Material.Filled.Cached">ReAuth</MudButton>
+    }
+    else
+    {
+        <MudChip Color="Color.Error" Size="Size.Small">Required</MudChip>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto" StartIcon="@Icons.Material.Filled.Error">Auth</MudButton>
+    }
+</div>
 
-    <MudCardContent>
-        <div class="d-flex align-center">
-            <MudText>Twitch Auth Status:</MudText>
-            @if (ConfigService.GetTwitchToken() != null)
-            {
-                <MudChip Color="Color.Success" Size="Size.Small">Active</MudChip>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto" StartIcon="@Icons.Material.Filled.Cached">ReAuth</MudButton>
-            }
-            else
-            {
-                <MudChip Color="Color.Error" Size="Size.Small">Required</MudChip>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto" StartIcon="@Icons.Material.Filled.Error">Auth</MudButton>
-            }
-        </div>
-    </MudCardContent>
-
-</MudCard>
 
 @code {
     [Inject]
@@ -40,7 +30,7 @@
     private void TwitchAuth()
     {
         string ID = ConfigService.GetTwitchId() ?? _config["TwitchAppID"]!;
-        Dictionary<string, string?> query = new () {
+        Dictionary<string, string?> query = new() {
             {"client_id", ID },
             {"redirect_uri", $"{Navigation.BaseUri}twitchoauth" },
             {"response_type", "token" },

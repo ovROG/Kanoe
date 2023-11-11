@@ -1,54 +1,49 @@
 ﻿@page "/config/actions"
 
-<MudCard Class="mt-3">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h4"> <b>Actions Config</b></MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
-    <MudCardContent>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-            Size="Size.Medium" OnClick="NewAction">Add New</MudButton>
-        <MudTable Items="@ActionList" Hover="true" class="mt-3" Outlined="true">
-            <HeaderContent>
-                <MudTh>Name</MudTh>
-                <MudTh>Triggers</MudTh>
-                <MudTh>Events</MudTh>
-                <MudTh />
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Name">
-                    @context.Name
-                </MudTd>
-                <MudTd DataLabel="Triggers">
-                    @if (context.Triggers.Count == 0)
-                    {
-                        <MudChip Size="Size.Small">Empty</MudChip>
-                    }
-                    @foreach (Data.Models.Trigger trigger in context.Triggers)
-                    {
-                        <MudChip Size="Size.Small">@trigger.Type</MudChip>
-                    }
-                </MudTd>
-                <MudTd DataLabel="Events">
-                    @if (context.Events.Count == 0)
-                    {
-                        <MudChip Size="Size.Small">Empty</MudChip>
-                    }
-                    @foreach (Data.Models.Event _event in context.Events)
-                    {
-                        <MudChip Size="Size.Small">@_event.Type</MudChip>
-                    }
-                </MudTd>
-                <MudTh Style="text-align:right">
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Edit" Href=@( "/config/actions/" + context.Id)>
-                        Edit
-                    </MudButton>
-                </MudTh>
-            </RowTemplate>
-        </MudTable>
-    </MudCardContent>
-</MudCard>
+<MudTable Items="@ActionList" Hover="true" class="mt-3">
+
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Triggers</MudTh>
+        <MudTh>Events</MudTh>
+        <MudTh Style="text-align:right">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Medium" OnClick="NewAction">Add New</MudButton>
+        </MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="Name">
+            @context.Name
+        </MudTd>
+        <MudTd DataLabel="Triggers">
+            @if (context.Triggers.Count == 0)
+            {
+                <MudChip Size="Size.Small">Empty</MudChip>
+            }
+            @foreach (Data.Models.Trigger trigger in context.Triggers)
+            {
+                <MudChip Size="Size.Small">@trigger.Type</MudChip>
+            }
+        </MudTd>
+        <MudTd DataLabel="Events">
+            @if (context.Events.Count == 0)
+            {
+                <MudChip Size="Size.Small">Empty</MudChip>
+            }
+            @foreach (Data.Models.Event _event in context.Events)
+            {
+                <MudChip Size="Size.Small">@_event.Type</MudChip>
+            }
+        </MudTd>
+        <MudTh Style="text-align:right">
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Edit" Href=@( "/config/actions/" + context.Id)>
+                Edit
+            </MudButton>
+        </MudTh>
+    </RowTemplate>
+
+</MudTable>
 
 @code {
     [Inject]

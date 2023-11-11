@@ -4,62 +4,52 @@
 
 @page "/config/chat"
 
-<MudCard Class="mt-3">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h4"> <b>Chat Config</b></MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
+<div class="d-flex gap-4 align-center">
+    <MudFileUpload Class="mt-0" T="IBrowserFile" Accept=".css" FilesChanged="OnCssFileChange">
+        <ButtonTemplate>
+            <MudButton Variant="Variant.Filled" HtmlTag="label" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.CloudUpload" for="@context">
+                .css File
+            </MudButton>
+        </ButtonTemplate>
+    </MudFileUpload>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudDownload"
+               Size="Size.Medium" OnClick="LoadCss" Disabled="@(!IsCSSUploaded)">Load Current</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Medium" Class="ml-auto" OnClick="Delete"
+               Disabled="@(!IsCSSUploaded)">Delete Current</MudButton>
+</div>
 
-    <MudCardContent>
-        <div class="d-flex gap-4 align-center pt-3">
-            <MudFileUpload Class="mt-0" T="IBrowserFile" Accept=".css" FilesChanged="OnCssFileChange">
-                <ButtonTemplate>
-                    <MudButton Variant="Variant.Filled" HtmlTag="label" Color="Color.Primary"
-                        StartIcon="@Icons.Material.Filled.CloudUpload" for="@context">
-                        .css File
-                    </MudButton>
-                </ButtonTemplate>
-            </MudFileUpload>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudDownload"
-                Size="Size.Medium" OnClick="LoadCss" Disabled="@(!IsCSSUploaded)">Load Current</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Medium" Class="ml-auto" OnClick="Delete"
-                Disabled="@(!IsCSSUploaded)">Delete Current</MudButton>
-        </div>
-        <MudText Typo="Typo.h5" Class="pb-3 pt-5 d-flex align-baseline gap-3">
-            Preview:
-            @if (CssFileContent != null)
-            {
-                <MudText>@CssFileName <MudText Class="mud-secondary-text" Typo="Typo.caption">(@CssFileDate)</MudText>
-                    </MudText>
-            }
+<MudText Typo="Typo.h5" Class="pb-3 pt-5 d-flex align-baseline gap-3">
+    Preview:
+    @if (CssFileContent != null)
+    {
+        <MudText>
+            @CssFileName <MudText Color="Color.Tertiary" Typo="Typo.caption">(@CssFileDate)</MudText>
         </MudText>
-        <MudPaper Class="pa-3" Outlined="true">
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ChatMockupService.SendMessage">
-                        Send Message</MudButton>
-                </MudItem>
-                <MudItem xs="6">
-                    <iframe allowtransparency class="border p-0 chatmockup rounded"
-                        src="/chat/i@mockup?limit=4&mockup=true" id="chatpreview" @key=@(LastUpdate + "chat") />
-                </MudItem>
-                <MudItem xs="6">
-                    <Kanoe2.Shared.Components.CodeBlock Content="@CssFileContent" Height="400px" />
-                </MudItem>
-            </MudGrid>
-        </MudPaper>
-        <div class="d-flex pt-3">
-            <MudButton Variant="Variant.Filled" Color="Color.Success" Class="ml-auto" OnClick="UploadCss"
-                Disabled=@(CssFile == null)>Save</MudButton>
-        </div>
-    </MudCardContent>
+    }
+</MudText>
 
-    <MudCardActions>
+<MudPaper Class="pa-3" Outlined="true">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Filled" OnClick="ChatMockupService.SendMessage">
+                Send Message
+            </MudButton>
+        </MudItem>
+        <MudItem xs="6">
+            <iframe allowtransparency class="border p-0 chatmockup rounded"
+                    src="/chat/i@mockup?limit=4&mockup=true" id="chatpreview" @key=@(LastUpdate + "chat") />
+        </MudItem>
+        <MudItem xs="6">
+            <Kanoe2.Shared.Components.CodeBlock Content="@CssFileContent" Height="400px" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-    </MudCardActions>
-
-</MudCard>
+<div class="d-flex pt-3">
+    <MudButton Variant="Variant.Filled" Color="Color.Success" Class="ml-auto" OnClick="UploadCss"
+               Disabled=@(CssFile == null)>Save</MudButton>
+</div>
 
 @code {
     [Inject]
