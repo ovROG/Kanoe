@@ -8,6 +8,7 @@
 <PageTitle>Alerts</PageTitle>
 
 @code {
+    //TODO:Add option to make multiple alerts pages and select with one to use in action
     [Inject]
     public required NavigationManager Navigation { get; set; }
     [Inject]
@@ -41,7 +42,7 @@
 
     public void Sound(string file, double volume)
     {
-        JS.InvokeVoidAsync("PlayAudio", @"\api\userdata\" + file, volume);
+        JS.InvokeVoidAsync("PlayAudio", @"\api\userdata\" + file, volume); //TODO: Add Global volume (modifier)
     }
 
     public async ValueTask DisposeAsync()

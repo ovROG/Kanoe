@@ -25,7 +25,7 @@ namespace Kanoe2.Data.Models
         }
     }
 
-    public class Sound : Event
+    public class Sound : Event //TODO: Add "Random Sound" event
     {
         public override EventType Type { get { return EventType.Sound; } }
         public string File { get; set; } = default!;

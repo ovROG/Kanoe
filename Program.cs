@@ -2,16 +2,23 @@ using Kanoe2.Hubs;
 using Kanoe2.Services;
 using Kanoe2.Services.Mockups;
 using Kanoe2.Services.Twitch;
+using MudBlazor;
 using MudBlazor.Services;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://localhost:" + (builder.Configuration["port"] ?? "5000"));
+string url = "http://localhost:" + (builder.Configuration["port"] ?? "5026");
+
+builder.WebHost.UseUrls(url);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+});
 
 builder.Services.AddSingleton<Config>();
 builder.Services.AddSingleton<UserFiles>();
@@ -49,8 +56,14 @@ app.MapHub<Chat>("/chathub");
 app.MapHub<Actions>("/actionshub");
 app.MapHub<Notifications>("/notificationshub");
 
-app.MapGet("/api/userdata/{*path}", async (HttpContext contex, UserFiles UF, string path) => await UF.GetLocalFile(contex, @$"\UserData\{path}"));
+app.MapGet("/api/userdata/{*path}", async (HttpContext contex, UserFiles UF, string? path) => await UF.GetLocalFile(contex, @$"\UserData\{path}"));
 
 app.MapFallbackToPage("/_Host");
+
+Process.Start(new ProcessStartInfo
+{
+    FileName = url,
+    UseShellExecute = true
+});
 
 app.Run();

@@ -15,25 +15,28 @@
 
 Just run .exe
 
-| Argument      | Default | Description                      |
-|---------------|---------|----------------------------------|
-| `--port`      | `5000`  | *Launch with given port*                                        |
-| `--twitchid`  | `null`  | *Set custom Client ID for Twitch* **(Will be saved in config)** |
+| Argument         | Default | Description                      |
+|------------------|---------|----------------------------------|
+| `--port`         | `5026`  | *Launch with given port*                                        |
+| `--twitchappid`  | `null`  | *Set custom Client ID for Twitch* (**NOT** saved in config)     |
+| `--twitchid`     | `null`  | *Set custom Client ID for Twitch* (**WILL** be saved in config) |
 
-Then you can open `http://localhost:5000/` for configuration
+*(or use appsettings.json)*
+
+Then you can open `http://localhost:5026/` for configuration
 
 ### Chat
 
-`http://localhost:5000/chat/{channel}?limit=*`
+`http://localhost:5026/chat/{channel}?limit=*`
 
 - `{channel}` - Twitch channel login
 - `limit` - Limits amount of messages (Optional)
 
-Example: `http://localhost:5000/chat/ovrog?limit=4`
+Example: `http://localhost:5026/chat/ovrog?limit=4`
 
 ### Soundboard & TTS
 
-`http://localhost:5000/alerts`
+`http://localhost:5026/alerts`
 
 ## Dev
 Instal client libraries:
@@ -48,9 +51,3 @@ Add libman (VS Code):
 Run:
 
     dotnet watch run --launch-profile http --non-interactive
-
-Secrets Example:
-    
-    {
-        "TwitchAppID": *ClientID*
-    }

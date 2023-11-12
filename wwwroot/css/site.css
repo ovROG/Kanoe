@@ -1,1 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Play&display=swap');
+
+#reconnect-modal {
+    position: fixed;
+    inset: 0px;
+    overflow: hidden;
+    background-color: rgb(255, 255, 255);
+    opacity: 0.8;
+    text-align: center;
+    font-weight: bold;
+    z-index: 9999 !important;
+    background-color: var(--mud-palette-background) !important;
+}

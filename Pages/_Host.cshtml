@@ -62,6 +62,8 @@
 <body>
     <component type="typeof(App)" render-mode="ServerPrerendered" />
 
+    <div id="reconnect-modal" style="display: none;"></div>
+
     <div id="blazor-error-ui">
         <environment include="Staging,Production">
             An error has occurred. This application may no longer respond until reloaded.
@@ -73,7 +75,8 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="_framework/blazor.server.js"></script>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script src="boot.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 </body>
 </html>
