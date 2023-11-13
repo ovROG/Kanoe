@@ -1,4 +1,4 @@
-﻿namespace Kanoe2.Services
+﻿namespace Kanoe.Services
 {
     public class UserFiles
     {

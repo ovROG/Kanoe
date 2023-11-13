@@ -1,8 +1,8 @@
-﻿using Kanoe2.Hubs;
+﻿using Kanoe.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 
-namespace Kanoe2.Services.Mockups
+namespace Kanoe.Services.Mockups
 {
     public class ChatMockupService
     {

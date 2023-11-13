@@ -1,4 +1,4 @@
-﻿using Kanoe2.Hubs;
+﻿using Kanoe.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using TwitchLib.Client;
@@ -7,7 +7,7 @@ using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 
-namespace Kanoe2.Services.Twitch
+namespace Kanoe.Services.Twitch
 {
     public class TwitchChatService
     {

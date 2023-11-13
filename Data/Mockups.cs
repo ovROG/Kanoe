@@ -1,7 +1,7 @@
-﻿using Kanoe2.Data.Models;
+﻿using Kanoe.Data.Models;
 using System.Drawing;
 
-namespace Kanoe2.Data
+namespace Kanoe.Data
 {
     public static class Mockups
     {

@@ -1,8 +1,8 @@
-using Kanoe2.Data.Models;
+using Kanoe.Data.Models;
 using TwitchLib.PubSub;
 using TwitchLib.PubSub.Events;
 
-namespace Kanoe2.Services.Twitch
+namespace Kanoe.Services.Twitch
 {
     public class TwitchEventsService
     {

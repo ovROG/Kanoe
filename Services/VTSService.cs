@@ -1,5 +1,5 @@
-using Kanoe2.Data.Models;
-using Kanoe2.Hubs;
+using Kanoe.Data.Models;
+using Kanoe.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Net;
 using System.Net.Sockets;
@@ -7,7 +7,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 
-namespace Kanoe2.Services
+namespace Kanoe.Services
 {
     public class VTSService
     {

@@ -1,6 +1,6 @@
 @using TwitchLib.Api.Helix.Models.ChannelPoints;
-@using Kanoe2.Data.Models;
-@using Kanoe2.Shared.Components.Events;
+@using Kanoe.Data.Models;
+@using Kanoe.Shared.Components.Events;
 
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
@@ -14,19 +14,19 @@
         <b>Action</b>
         <MudText>(@(Id))</MudText>
     </MudText>
-    <MudIconButton class="ml-auto" Color="Color.Error" Disabled="@(Action == null)"
+    <MudIconButton class="ml-auto" Color="Color.Error" Disabled="@(ActionObject == null)"
                    Icon="@Icons.Material.Filled.Delete" OnClick="Delete" />
-    <MudIconButton Color="Color.Success" Disabled="@(Action == null)" Icon="@Icons.Material.Filled.Save"
+    <MudIconButton Color="Color.Success" Disabled="@(ActionObject == null)" Icon="@Icons.Material.Filled.Save"
                    OnClick="Save" />
 </div>
 
-@if (Action != null)
+@if (ActionObject != null)
 {
     <div class="d-flex pt-3 align-content-center gap-5">
-        <MudTextField @bind-Value="@Action.Name" Label="Name" Variant="Variant.Text" />
+        <MudTextField @bind-Value="@ActionObject.Name" Label="Name" Variant="Variant.Text" />
         <MudNumericField @bind-Value="@RateLimit" Label="RateLimit" Variant="Variant.Text" Min="0"
                          Adornment="Adornment.End" AdornmentText="ms" HideSpinButtons="true" Disabled />
-         <MudSwitch @bind-Checked="@Action.AutoDisable" Label="Auto Disable" Color="Color.Primary"
+         <MudSwitch @bind-Checked="@ActionObject.AutoDisable" Label="Auto Disable" Color="Color.Primary"
                     class="justify-end" Disabled />
      </div>
 
@@ -47,9 +47,9 @@
             </MudMenu>
         </div>
 
-        @if (Action.Triggers.Count > 0)
+        @if (ActionObject.Triggers.Count > 0)
         {
-            <MudTable Items="@Action.Triggers" Hover="true" class="mt-3" Outlined="true">
+            <MudTable Items="@ActionObject.Triggers" Hover="true" class="mt-3" Outlined="true">
                 <RowTemplate>
                     <MudTd>
                         <div class="d-flex align-center gap-5">
@@ -92,9 +92,9 @@
             </MudMenu>
         </div>
 
-        @if (Action.Events.Count > 0)
+        @if (ActionObject.Events.Count > 0)
         {
-            <MudTable Items="@Action.Events" Hover="true" class="mt-3" Outlined="true">
+            <MudTable Items="@ActionObject.Events" Hover="true" class="mt-3" Outlined="true">
                 <RowTemplate>
                     <MudTd>
                         <MudText Class="pb-3">@context.Type:</MudText>
@@ -140,7 +140,7 @@ else
     [Parameter]
     public string Id { get; set; } = default!;
 
-    public Data.Models.Action? Action { get; set; }
+    public Data.Models.Action? ActionObject { get; set; }
     public CustomReward[] TwitchRewards { get; set; } = Array.Empty<CustomReward>();
 
     public double RateLimit { get; set; } = default!;
@@ -148,10 +148,10 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        Action = ConfigService.GetAction(new Guid(Id));
-        if (Action != null)
+        ActionObject = ConfigService.GetAction(new Guid(Id));
+        if (ActionObject != null)
         {
-            RateLimit = Action.RateLimit.TotalMilliseconds;
+            RateLimit = ActionObject.RateLimit.TotalMilliseconds;
         }
         TwitchRewards = await TwitchApiService.GetPointRewards();
         StateHasChanged();
@@ -168,12 +168,12 @@ else
             default:
                 throw new ArgumentException("No type found", nameof(type));
         }
-        Action!.Triggers.Add(newTrigger);
+        ActionObject!.Triggers.Add(newTrigger);
     }
 
     public void DeleteTrigger(Trigger trigger)
     {
-        Action!.Triggers.Remove(trigger);
+        ActionObject!.Triggers.Remove(trigger);
     }
 
     public void NewEvent(EventType type)
@@ -196,18 +196,18 @@ else
             default:
                 throw new ArgumentException("No type found", nameof(type));
         }
-        Action!.Events.Add(newEvent);
+        ActionObject!.Events.Add(newEvent);
     }
 
     public void DeleteEvent(Event e)
     {
-        Action!.Events.Remove(e);
+        ActionObject!.Events.Remove(e);
     }
 
     public void Save()
     {
-        Action!.RateLimit = TimeSpan.FromMilliseconds(RateLimit);
-        ConfigService.SetAction(Action!);
+        ActionObject!.RateLimit = TimeSpan.FromMilliseconds(RateLimit);
+        ConfigService.SetAction(ActionObject!);
         SnackbarService.Add("Saved", Severity.Success);
     }
 
@@ -220,7 +220,7 @@ else
 
         if (result == true)
         {
-            ConfigService.DeleteAction(Action!.Id);
+            ConfigService.DeleteAction(ActionObject!.Id);
             NavigationManager.NavigateTo("/config/actions");
         };
     }

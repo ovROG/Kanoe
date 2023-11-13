@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
-namespace Kanoe2.Shared.Components
+namespace Kanoe.Shared.Components
 {
     public class PasswordInput<T> : MudTextField<T>
     {

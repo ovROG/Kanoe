@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Kanoe2.Data.Models
+namespace Kanoe.Data.Models
 {
     public enum TriggerType
     {

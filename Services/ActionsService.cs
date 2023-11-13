@@ -1,8 +1,8 @@
-using Kanoe2.Data.Models;
-using Kanoe2.Hubs;
+using Kanoe.Data.Models;
+using Kanoe.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Kanoe2.Services
+namespace Kanoe.Services
 {
     public class ActionsService
     {

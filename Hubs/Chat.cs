@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace Kanoe2.Hubs
+namespace Kanoe.Hubs
 {
     public class Chat : Hub //TODO: Add type
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using MudBlazor;
 
-namespace Kanoe2.Hubs
+namespace Kanoe.Hubs
 {
     public interface INotificationsClient
     {

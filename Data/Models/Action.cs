@@ -1,4 +1,4 @@
-﻿namespace Kanoe2.Data.Models
+﻿namespace Kanoe.Data.Models
 {
     public class Action : ICloneable
     {

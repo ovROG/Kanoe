@@ -1,7 +1,7 @@
-using Kanoe2.Hubs;
-using Kanoe2.Services;
-using Kanoe2.Services.Mockups;
-using Kanoe2.Services.Twitch;
+using Kanoe.Hubs;
+using Kanoe.Services;
+using Kanoe.Services.Mockups;
+using Kanoe.Services.Twitch;
 using MudBlazor;
 using MudBlazor.Services;
 using System.Diagnostics;

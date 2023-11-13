@@ -1,7 +1,7 @@
-﻿using Kanoe2.Data.Models;
+﻿using Kanoe.Data.Models;
 using System.Xml.Serialization;
 
-namespace Kanoe2.Services
+namespace Kanoe.Services
 {
     public class Config
     {

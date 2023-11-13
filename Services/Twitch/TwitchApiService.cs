@@ -3,7 +3,7 @@ using TwitchLib.Api.Helix.Models.ChannelPoints;
 using TwitchLib.Api.Helix.Models.ChannelPoints.GetCustomReward;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
 
-namespace Kanoe2.Services.Twitch
+namespace Kanoe.Services.Twitch
 {
     public class TwitchApiService
     {
@@ -14,7 +14,7 @@ namespace Kanoe2.Services.Twitch
         {
             api = new TwitchAPI();
             config = configService;
-            if(_config["twitchid"] != null)
+            if (_config["twitchid"] != null)
             {
                 configService.SetTwitchId(_config["twitchid"]!);
             }

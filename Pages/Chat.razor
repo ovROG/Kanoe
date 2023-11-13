@@ -1,6 +1,6 @@
 ﻿@page "/chat/{channel}"
-@using Kanoe2.Services.Twitch
-@using Kanoe2.Services.Mockups
+@using Kanoe.Services.Twitch
+@using Kanoe.Services.Mockups
 @using Microsoft.AspNetCore.SignalR.Client
 @using System.Text.Json
 
@@ -17,7 +17,7 @@
 <div class="chatbox">
     @foreach (var message in messages)
     {
-        <Kanoe2.Shared.Components.ChatMessage Message="@message" />
+        <Kanoe.Shared.Components.ChatMessage Message="@message" />
     }
 </div>
 

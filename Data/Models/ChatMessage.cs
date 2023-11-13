@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Kanoe2.Data.Models
+namespace Kanoe.Data.Models
 {
     public class ChatMessage
     {

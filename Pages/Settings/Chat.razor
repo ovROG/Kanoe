@@ -1,4 +1,4 @@
-﻿@using Kanoe2.Services.Mockups
+﻿@using Kanoe.Services.Mockups
 
 @inject IDialogService DialogService;
 
@@ -41,7 +41,7 @@
                     src="/chat/i@mockup?limit=4&mockup=true" id="chatpreview" @key=@(LastUpdate + "chat") />
         </MudItem>
         <MudItem xs="6">
-            <Kanoe2.Shared.Components.CodeBlock Content="@CssFileContent" Height="400px" />
+            <Kanoe.Shared.Components.CodeBlock Content="@CssFileContent" Height="400px" />
         </MudItem>
     </MudGrid>
 </MudPaper>
