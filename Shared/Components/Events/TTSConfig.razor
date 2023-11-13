@@ -1,7 +1,28 @@
 <div class="d-flex align-center gap-5">
+    <MudSelect @bind-Value="@(TTS.SourceType)" Label="Type" AnchorOrigin="Origin.BottomCenter"
+               Variant="Variant.Outlined">
+        @foreach (Data.Models.TTS.Source type in (Data.Models.TTS.Source[])Enum.GetValues(typeof(Data.Models.TTS.Source)))
+        {
+            <MudSelectItem Value="@(type)">
+                @type
+            </MudSelectItem>
+        }
+    </MudSelect>
+    @if (TTS.SourceType == Data.Models.TTS.Source.Local)
+    {
+        <MudSelect @bind-Value="@(TTS.Voice)" Label="Voice" AnchorOrigin="Origin.BottomCenter"
+                   Variant="Variant.Outlined">
+            @foreach (string voice in LocalSpeechService.GetTTSVoices())
+            {
+                <MudSelectItem Value="@(voice)">
+                    @voice
+                </MudSelectItem>
+            }
+        </MudSelect>
+    }
     <MudTextField @bind-Value="TTS.Template" Label="Template" Variant="Variant.Outlined"></MudTextField>
     <MudSlider @bind-Value="TTS.Volume" Min="0" Max="1" Step="0.05" Variant="Variant.Filled" ValueLabel="true"
-        class="flex-1">Volume</MudSlider>
+               class="flex-1">Volume</MudSlider>
     <MudIconButton class="flex-none" Variant="Variant.Outlined" Color="Color.Primary" Icon="@Icons.Material.Filled.PlayArrow" OnClick="() => Play()" />
     <MudIconButton class="flex-none ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="() => onDeleteHandler()" />
 </div>
@@ -10,14 +31,27 @@
     [Inject]
     public required IJSRuntime JS { get; set; }
 
+    [Inject]
+    public required Kanoe.Services.LocalSpeechService LocalSpeechService { get; set; }
+
     [Parameter]
     public required Data.Models.TTS TTS { get; set; }
     [Parameter]
     public EventCallback onDelete { get; set; }
 
-    protected void Play()
+    protected async void Play()
     {
-        JS.InvokeVoidAsync("TTS", TTS.Template, TTS.Volume);
+        switch (TTS.SourceType)
+        {
+            case Data.Models.TTS.Source.Local:
+                await LocalSpeechService.TTSToAudoFile(TTS.Template, @"\UserData\temp\tts.wav", TTS.Voice);
+                await JS.InvokeVoidAsync("PlayAudio", @"\api\userdata\temp\tts.wav", TTS.Volume);
+                break;
+            case Data.Models.TTS.Source.Browser:
+                await JS.InvokeVoidAsync("TTS", TTS.Template, TTS.Volume);
+                break;
+
+        }
     }
 
     protected async void onDeleteHandler()

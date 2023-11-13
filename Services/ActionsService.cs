@@ -9,12 +9,15 @@ namespace Kanoe.Services
         private readonly Config config;
         private readonly VTSService VTSService;
         private readonly IHubContext<Actions, IActionsClient> hubContext;
+        private readonly LocalSpeechService LocalSpeechService;
+        private int ttsCounter; //Mabybe change in future
 
-        public ActionsService(Config configService, VTSService vtsService, IHubContext<Actions, IActionsClient> hub)
+        public ActionsService(Config configService, VTSService vtsService, IHubContext<Actions, IActionsClient> hub, LocalSpeechService localSpeechService)
         {
             config = configService;
             VTSService = vtsService;
             hubContext = hub;
+            LocalSpeechService = localSpeechService;
         }
 
         public ActionsService FireTrigger(Trigger trigger, Dictionary<string, string> varibles)
@@ -35,7 +38,17 @@ namespace Kanoe.Services
             switch (e)
             {
                 case TTS ts:
-                    await hubContext.Clients.All.TTS(ts.FillTemplate(varibles), ts.Volume);
+                    switch (ts.SourceType)
+                        {
+                        case TTS.Source.Browser:
+                            await hubContext.Clients.All.TTS(ts.FillTemplate(varibles), ts.Volume);
+                            break;
+                        case TTS.Source.Local:
+                            await LocalSpeechService.TTSToAudoFile(ts.FillTemplate(varibles), $@"\UserData\temp\tts{ttsCounter}.wav", ts.Voice);
+                            await hubContext.Clients.All.Sound($@"temp\tts{ttsCounter}.wav", ts.Volume);
+                            ttsCounter++;
+                            break;
+                    }
                     break;
                 case Sound sound:
                     await hubContext.Clients.All.Sound(sound.File, sound.Volume);

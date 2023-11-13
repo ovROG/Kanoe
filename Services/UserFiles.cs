@@ -15,5 +15,17 @@
                 await contex.Response.WriteAsync("");
             }
         }
+
+        public void ClearTempFolder()
+        {
+            try
+            {
+                Directory.Delete(Directory.GetCurrentDirectory() + @"\UserData\temp", true);
+            }
+            catch
+            {
+                Console.WriteLine("UNABLE TO CLEAR TEMP FOLDER");
+            }
+        }
     }
 }

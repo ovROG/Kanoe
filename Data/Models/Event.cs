@@ -40,10 +40,17 @@ namespace Kanoe.Data.Models
     public class TTS : Event
     {
         public override EventType Type { get { return EventType.TTS; } }
-        public string Template { get; set; } = "{name} said: {text}";
-        public double Volume { get; set; } = 0.8;
 
         public static readonly string[] VariblesList = { "{name}", "{text}" };
+        public enum Source
+        {
+            Browser,
+            Local,
+        }
+        public string Template { get; set; } = "{name} said: {text}";
+        public double Volume { get; set; } = 0.8;
+        public Source SourceType { get; set; } = Source.Browser;
+        public string? Voice { get; set; }
 
         public override object Clone()
         {

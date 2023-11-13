@@ -10,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 string url = "http://localhost:" + (builder.Configuration["port"] ?? "5026");
 
+UserFiles userFiles = new();
+userFiles.ClearTempFolder();
+
 builder.WebHost.UseUrls(url);
 
 // Add services to the container.
@@ -21,7 +24,8 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddSingleton<Config>();
-builder.Services.AddSingleton<UserFiles>();
+builder.Services.AddSingleton(userFiles);
+builder.Services.AddSingleton<LocalSpeechService>();
 
 builder.Services.AddSingleton<ActionsService>();
 

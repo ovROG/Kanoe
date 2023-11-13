@@ -13,13 +13,14 @@ namespace Kanoe.Services.Twitch
     {
         private readonly TwitchClient client;
         private readonly IHubContext<Chat> hubContext;
-        private readonly ConnectionCredentials credentials = new("justinfan555444", "access_token");
 
         private readonly TaskCompletionSource<bool> IsConnected = new();
 
         public TwitchChatService(IHubContext<Chat> hub)
         {
             hubContext = hub;
+            Random rnd = new();
+            ConnectionCredentials credentials = new("justinfan" + rnd.Next(100000, 999999).ToString(), "access_token");
 
             var clientOptions = new ClientOptions
             {
@@ -42,7 +43,7 @@ namespace Kanoe.Services.Twitch
 
             client.Initialize(credentials);
 
-            client.Connect();
+            client.Connect(); //TODO: Auto reconnect on fails
         }
 
         public async Task<TwitchChatService> ConnectTo(string channel)
