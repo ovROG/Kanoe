@@ -64,7 +64,7 @@ app.MapGet("/api/userdata/{*path}", async (HttpContext contex, UserFiles UF, str
 
 app.MapFallbackToPage("/_Host");
 
-Process.Start(new ProcessStartInfo
+Process.Start(new ProcessStartInfo // Open Browser
 {
     FileName = url,
     UseShellExecute = true

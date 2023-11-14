@@ -13,7 +13,9 @@
 
 ## Run
 
-Just run .exe
+Just run `AppUi.exe`
+
+Or you can use `Kanoe.exe` as CLI
 
 | Argument         | Default | Description                      |
 |------------------|---------|----------------------------------|
