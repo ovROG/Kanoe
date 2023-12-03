@@ -6,12 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <PublishSingleFile>true</PublishSingleFile>
     <UserSecretsId>7797614f-38a0-4024-bffd-a4edb52ed54d</UserSecretsId>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AppUi\**" />
     <Compile Remove="UserData\**" />
+    <Content Remove="AppUi\**" />
     <Content Remove="UserData\**" />
+    <EmbeddedResource Remove="AppUi\**" />
     <EmbeddedResource Remove="UserData\**" />
+    <None Remove="AppUi\**" />
     <None Remove="UserData\**" />
   </ItemGroup>
 

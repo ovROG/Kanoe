@@ -112,6 +112,9 @@
                             case VTSExpression vtsexpression:
                                 <VTSExpressionConfig VTSExpression="@vtsexpression" onDelete="() => DeleteEvent(context)" />
                                 break;
+                            case AIMP aimp:
+                                <AIMPConfig AIMP="@aimp" onDelete="() => DeleteEvent(context)" />
+                                break;
                             default:
                                 break;
                         }
@@ -192,6 +195,9 @@ else
                 break;
             case EventType.VTSExpression:
                 newEvent = new Data.Models.VTSExpression();
+                break;
+            case EventType.AIMP:
+                newEvent = new Data.Models.AIMP();
                 break;
             default:
                 throw new ArgumentException("No type found", nameof(type));

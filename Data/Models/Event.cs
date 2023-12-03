@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Xml.Serialization;
+using static Kanoe.Data.Models.VTSExpression;
 
 namespace Kanoe.Data.Models
 {
@@ -8,13 +9,15 @@ namespace Kanoe.Data.Models
         Sound,
         TTS,
         VTSHotkey,
-        VTSExpression
+        VTSExpression,
+        AIMP,
     }
 
     [XmlInclude(typeof(Sound))]
     [XmlInclude(typeof(TTS))]
     [XmlInclude(typeof(VTSHotkey))]
     [XmlInclude(typeof(VTSExpression))]
+    [XmlInclude(typeof(AIMP))]
     public abstract class Event : ICloneable
     {
         public abstract EventType Type { get; }
@@ -91,6 +94,23 @@ namespace Kanoe.Data.Models
         }
         public string File { get; set; } = default!;
         public State Active { get; set; } = State.True;
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
+    }
+
+    public class AIMP : Event
+    {
+        public override EventType Type { get { return EventType.AIMP; } }
+        public enum Command
+        {
+            NEXT_TRACK,
+            PREV_TRACK
+        }
+
+        public Command CMD { get; set; } = Command.NEXT_TRACK;
 
         public override object Clone()
         {

@@ -1,0 +1,26 @@
+﻿<div class="d-flex align-center gap-5">
+
+    <MudSelect T="Data.Models.AIMP.Command" @bind-Value="@(AIMP.CMD)" Label="Command" AnchorOrigin="Origin.BottomCenter"
+               Variant="Variant.Outlined">
+        @foreach (Data.Models.AIMP.Command cmd in (Data.Models.AIMP.Command[])Enum.GetValues(typeof(Data.Models.AIMP.Command)))
+        {
+            <MudSelectItem Value="@(cmd)">
+                @cmd
+            </MudSelectItem>
+        }
+    </MudSelect>
+    <MudIconButton class="flex-none ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                   OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Parameter]
+    public required Data.Models.AIMP AIMP { get; set; }
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}

@@ -10,14 +10,16 @@ namespace Kanoe.Services
         private readonly VTSService VTSService;
         private readonly IHubContext<Actions, IActionsClient> hubContext;
         private readonly LocalSpeechService LocalSpeechService;
+        private readonly AIMPService AIMPService;
         private int ttsCounter; //Mabybe change in future
 
-        public ActionsService(Config configService, VTSService vtsService, IHubContext<Actions, IActionsClient> hub, LocalSpeechService localSpeechService)
+        public ActionsService(Config configService, VTSService vtsService, IHubContext<Actions, IActionsClient> hub, LocalSpeechService localSpeechService, AIMPService aIMPService)
         {
             config = configService;
             VTSService = vtsService;
             hubContext = hub;
             LocalSpeechService = localSpeechService;
+            AIMPService = aIMPService;
         }
 
         public ActionsService FireTrigger(Trigger trigger, Dictionary<string, string> varibles)
@@ -58,6 +60,17 @@ namespace Kanoe.Services
                     break;
                 case VTSExpression vtsexpression:
                     await VTSService.SendExpression(vtsexpression.File, vtsexpression.Active);
+                    break;
+                case AIMP aimp:
+                    switch(aimp.CMD)
+                    {
+                        case AIMP.Command.NEXT_TRACK:
+                            AIMPService.NextTrack();
+                            break;
+                        case AIMP.Command.PREV_TRACK:
+                            AIMPService.PrevTrack();
+                            break;
+                    }
                     break;
                 default:
                     break;
