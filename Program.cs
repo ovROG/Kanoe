@@ -5,7 +5,6 @@ using Kanoe.Services.Twitch;
 using MudBlazor;
 using MudBlazor.Services;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,13 +24,11 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddSingleton<Config>();
+builder.Services.AddSingleton<NativeOSMethodsService>();
 builder.Services.AddSingleton(userFiles);
 builder.Services.AddSingleton<LocalSpeechService>();
+builder.Services.AddSingleton<AIMPService>();
 
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-{
-    builder.Services.AddSingleton<AIMPService>();
-}
 
 builder.Services.AddSingleton<ActionsService>();
 
