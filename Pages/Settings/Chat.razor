@@ -134,7 +134,7 @@
             }
             catch
             {
-                Console.WriteLine("UNABLE TO DELETE chat.css");
+                Logger.Error("UNABLE TO DELETE chat.css");
             }
         };
         IsCSSUploaded = File.Exists(Environment.ContentRootPath + "/UserData/uploads/chat.css");

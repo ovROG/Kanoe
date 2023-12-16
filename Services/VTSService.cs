@@ -1,5 +1,6 @@
 using Kanoe.Data.Models;
 using Kanoe.Hubs;
+using Kanoe.Shared;
 using Microsoft.AspNetCore.SignalR;
 using System.Net;
 using System.Net.Sockets;
@@ -139,8 +140,8 @@ namespace Kanoe.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine("UNABLE TO DISCOVER PORT");
-                Console.WriteLine(e);
+                Logger.Error("UNABLE TO DISCOVER PORT");
+                Logger.Error(e.Message);
                 return;
             }
             return;
@@ -158,14 +159,12 @@ namespace Kanoe.Services
                 }
                 catch (Exception e)
                 {
-
                     throw new Exception("UNABLE TO CONNECT TO VTS PORT\n" + e.Message);
-
                 }
             }
             else
             {
-                Console.WriteLine("UNABLE TO CONNECT WITHOUT PORT");
+                Logger.Error("UNABLE TO CONNECT WITHOUT PORT");
             }
         }
         private async Task Auth()
@@ -183,15 +182,13 @@ namespace Kanoe.Services
             AuthenticationResponse auth = await GetResponce<AuthenticationResponse>();
             if (!auth.authenticated)
             {
-                Console.WriteLine("UNABLE AUTH TO VTS WITH CURRENT TOKEN REQUESTING NEW TOKEN");
+                Logger.Log("UNABLE AUTH TO VTS WITH CURRENT TOKEN REQUESTING NEW TOKEN");
                 config.SetVTSToken(null);
                 throw new Exception("UNABLE AUTH TO VTS");
             }
         }
         private async Task Send(string type, object? data = null)
         {
-            Console.WriteLine($"Send: {type}");
-
             VTSRequest<object> requestRaw = new()
             {
                 apiName = "VTubeStudioPublicAPI",
@@ -202,6 +199,7 @@ namespace Kanoe.Services
             };
 
             string requestJson = JsonSerializer.Serialize(requestRaw);
+            Logger.Log($"VTS Send: {requestJson} ");
             ArraySegment<byte> requestBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(requestJson));
             try
             {
@@ -209,10 +207,8 @@ namespace Kanoe.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine("UNABLE TO SEND VTS REQUEST:");
-                Console.WriteLine(requestJson);
-                Console.WriteLine("\n");
-                Console.WriteLine(e);
+                Logger.Error($"UNABLE TO SEND VTS REQUEST: {requestJson}");
+                Logger.Error($"Error: {e.Message}");
             }
         }
         private async Task<T?> GetResponce<T>()
@@ -248,26 +244,18 @@ namespace Kanoe.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine("UNABLE TO RECEIVE VTS RESPONCE");
-                Console.WriteLine(e);
+                Logger.Error("UNABLE TO RECEIVE VTS RESPONCE");
+                Logger.Error($"Error: {e.Message}");
             }
             string responce = Encoding.UTF8.GetString(buffer, 0, offset);
-            Console.WriteLine($"Get: {responce}");
+            Logger.Log($"VTS GetResponce: {responce}");
             try
             {
                 return JsonSerializer.Deserialize<VTSResponse<T>>(responce).data;
             }
             catch
             {
-                Console.WriteLine("UNABLE TO DESERIALIZE VTS RESPONCE TO:" + typeof(T));
-                try
-                {
-                    Console.WriteLine(JsonSerializer.Deserialize<VTSResponse<APIError>>(responce).data);
-                }
-                catch
-                {
-                    Console.WriteLine(responce);
-                }
+                Logger.Error("UNABLE TO DESERIALIZE VTS RESPONCE TO:" + typeof(T));
                 return default;
             }
         }
@@ -283,7 +271,7 @@ namespace Kanoe.Services
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Logger.Error("UNABLE CONNECT TO VTS:" + e.Message);
                     return default;
                 }
             }

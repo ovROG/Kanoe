@@ -1,4 +1,5 @@
 ﻿using Kanoe.Data.Models;
+using Kanoe.Shared;
 using System.Xml.Serialization;
 
 namespace Kanoe.Services
@@ -161,7 +162,7 @@ namespace Kanoe.Services
                 catch
                 {
                     TwitchConfig = new();
-                    Console.WriteLine("UNABLE TO READ TWITCH CONFIG");
+                    Logger.Error("UNABLE TO READ TWITCH CONFIG");
                 }
             }
 
@@ -176,7 +177,7 @@ namespace Kanoe.Services
                 catch
                 {
                     VTSConfig = new();
-                    Console.WriteLine("UNABLE TO READ VTS CONFIG");
+                    Logger.Error("UNABLE TO READ VTS CONFIG");
                 }
             }
 
@@ -191,7 +192,7 @@ namespace Kanoe.Services
                 catch
                 {
                     Actions = new();
-                    Console.WriteLine("UNABLE TO READ ACTIONS CONFIG");
+                    Logger.Error("UNABLE TO READ ACTIONS CONFIG");
                 }
             }
 

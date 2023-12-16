@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Kanoe.Shared;
+using System.Runtime.InteropServices;
 using System.Speech.Synthesis;
 
 namespace Kanoe.Services
@@ -19,11 +20,9 @@ namespace Kanoe.Services
                 catch
                 {
                     synth.Dispose();
-                    Console.WriteLine("UNABLE TO CREATE TTS FOLDER");
+                    Logger.Error("UNABLE TO CREATE TTS FOLDER");
                     return Task.CompletedTask; // Maybe? handle fail
                 }
-
-                Console.WriteLine(voice);
 
                 if (!string.IsNullOrEmpty(voice))
                 {

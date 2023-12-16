@@ -35,10 +35,5 @@ namespace Kanoe.Services
                 _ = nativeOSMethodsService.SendNativeMessage(AIMPWindow, WM_AIMP_COMMAND, AIMP_RA_CMD_PREV, 0);
             }
         }
-
-        public static void ChangeTrackHandel(int s)
-        {
-            Console.WriteLine(s.ToString() + "wpasdasd");
-        }
     }
 }

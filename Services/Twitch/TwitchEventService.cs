@@ -1,4 +1,5 @@
 using Kanoe.Data.Models;
+using Kanoe.Shared;
 using TwitchLib.PubSub;
 using TwitchLib.PubSub.Events;
 
@@ -27,8 +28,8 @@ namespace Kanoe.Services.Twitch
 
         private void Client_OnListenResponse(object? sender, OnListenResponseArgs e)
         {
-            Console.WriteLine(e.Topic + "|" + e.Successful);
-            Console.WriteLine(e.Response.Error ?? "No Error");
+            Logger.Log(e.Topic + "|" + e.Successful);
+            Logger.Log(e.Response.Error ?? "No Error");
         }
 
         private void Client_OnChannelPointsRewardRedeemed(object? sender, OnChannelPointsRewardRedeemedArgs e)
@@ -48,7 +49,7 @@ namespace Kanoe.Services.Twitch
 
         private void Client_OnPubSubServiceError(object? sender, OnPubSubServiceErrorArgs e)
         {
-            Console.WriteLine(e.Exception.Message);
+            Logger.Error(e.Exception.Message);
         }
 
         public void Connect()

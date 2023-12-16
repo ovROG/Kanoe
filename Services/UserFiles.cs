@@ -1,4 +1,6 @@
-﻿namespace Kanoe.Services
+﻿using Kanoe.Shared;
+
+namespace Kanoe.Services
 {
     public class UserFiles
     {
@@ -24,7 +26,7 @@
             }
             catch
             {
-                Console.WriteLine("UNABLE TO CLEAR TEMP FOLDER");
+                Logger.Error("UNABLE TO CLEAR TEMP FOLDER");
             }
         }
     }

@@ -74,8 +74,8 @@
             }
             else
             {
-                Console.WriteLine("ERROR: Cannot DeserializeObject Message:");
-                Console.WriteLine(message);
+                Logger.Error("ERROR: Unable Deserialize Message:");
+                Logger.Error(json);
             }
         });
 
