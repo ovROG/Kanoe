@@ -199,16 +199,17 @@ namespace Kanoe.Services
             };
 
             string requestJson = JsonSerializer.Serialize(requestRaw);
-            Logger.Log($"VTS Send: {requestJson} ");
             ArraySegment<byte> requestBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(requestJson));
             try
             {
                 await webSocket.SendAsync(requestBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                Logger.Log($"VTS Send: {requestJson} ");
             }
             catch (Exception e)
             {
                 Logger.Error($"UNABLE TO SEND VTS REQUEST: {requestJson}");
                 Logger.Error($"Error: {e.Message}");
+                throw;
             }
         }
         private async Task<T?> GetResponce<T>()
@@ -261,8 +262,10 @@ namespace Kanoe.Services
         }
         private async Task<T?> MakeRequest<T>(string type, object? data = null)
         {
+            
             if (webSocket.State != WebSocketState.Open)
             {
+                Logger.Log($"VTS Socket Connecting");
                 try
                 {
                     await DiscoverAPI();
@@ -277,7 +280,26 @@ namespace Kanoe.Services
             }
 
             await sendSemaphore.WaitAsync();
-            await Send(type, data);
+            try
+            {
+                await Send(type, data);
+            }
+            catch
+            {
+                //Retry
+                try
+                {
+                    await DiscoverAPI();
+                    await Connect();
+                    await Auth();
+                    await Send(type, data);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("VST Send Retry failed:" + e.Message);
+                    return default;
+                }
+            }
             T? res = await GetResponce<T>();
             sendSemaphore.Release(1);
             return res;
