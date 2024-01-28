@@ -1,0 +1,17 @@
+﻿<div class="d-flex align-center gap-5">
+    <MudTextField @bind-Value="TwitchChatCommand.Command" Label="Command" Variant="Variant.Outlined"></MudTextField>
+    <MudIconButton class="ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                   OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+    [Parameter]
+    public required Data.Models.TwitchChatCommand TwitchChatCommand { get; set; }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}

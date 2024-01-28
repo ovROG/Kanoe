@@ -114,6 +114,18 @@ namespace Kanoe.Services
             return this;
         }
 
+        public char GetTwitchChatPrefix()
+        {
+            return TwitchConfig.CommandPrefix;
+        }
+
+        public Config SetTwitchChatPrefix(char prefix)
+        {
+            TwitchConfig.CommandPrefix = prefix;
+            Save();
+            return this;
+        }
+
         //VTS
 
         public string? GetVTSToken()

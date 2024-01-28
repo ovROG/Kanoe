@@ -16,6 +16,11 @@
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto" StartIcon="@Icons.Material.Filled.Error">Auth</MudButton>
     }
 </div>
+<div class="d-flex align-center">
+    <MudText>Twitch Command Prefix:</MudText>
+    <MudTextField @bind-Value="TwitchPrefix" Label="Prefix" Variant="Variant.Outlined"></MudTextField>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SavePrefix" Class="ml-auto" StartIcon="@Icons.Material.Filled.Cached">Save</MudButton>
+</div>
 
 
 @code {
@@ -26,6 +31,12 @@
     [Inject]
     public required NavigationManager Navigation { get; set; }
 
+    public char? TwitchPrefix { get; set; } 
+
+    protected override void OnInitialized()
+    {
+        TwitchPrefix = ConfigService.GetTwitchChatPrefix();
+    }
 
     private void TwitchAuth()
     {
@@ -39,5 +50,10 @@
         };
         Uri Url = new(QueryHelpers.AddQueryString("https://id.twitch.tv/oauth2/authorize", query));
         Navigation.NavigateTo(Url.AbsoluteUri);
+    }
+
+    private void SavePrefix()
+    {
+        ConfigService.SetTwitchChatPrefix(TwitchPrefix ?? '!');
     }
 }

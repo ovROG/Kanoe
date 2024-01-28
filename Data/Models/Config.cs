@@ -10,6 +10,7 @@
         public string? Id { get; set; }
         public string? Login { get; set; }
         public string? UserId { get; set; }
+        public char CommandPrefix { get; set; } = '!';
     }
 
     public class VTSConfig : Config

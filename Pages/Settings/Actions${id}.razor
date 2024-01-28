@@ -1,6 +1,7 @@
 @using TwitchLib.Api.Helix.Models.ChannelPoints;
 @using Kanoe.Data.Models;
 @using Kanoe.Shared.Components.Events;
+@using Kanoe.Shared.Components.Triggers;
 
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
@@ -52,23 +53,19 @@
             <MudTable Items="@ActionObject.Triggers" Hover="true" class="mt-3" Outlined="true">
                 <RowTemplate>
                     <MudTd>
-                        <div class="d-flex align-center gap-5">
-                            @context.Type
-                            @if (context is TwitchPoints tp)
-                            {
-                                <MudSelect T="string" @bind-Value="@tp.Id" Label="Reward" AnchorOrigin="Origin.BottomCenter"
-                                           Variant="Variant.Outlined">
-                                    @foreach (CustomReward reward in TwitchRewards)
-                                    {
-                                        <MudSelectItem Value="@(reward.Id)">
-                                            @reward.Title
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
-                            }
-                            <MudIconButton class="ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
-                                           OnClick="() => DeleteTrigger(context)" />
-                        </div>
+                        <MudText Class="pb-3">@context.Type:</MudText>
+                        @switch (context)
+                        {
+                            case TwitchPoints tp:
+                                <TwitchRewardConfig onDelete="() => DeleteTrigger(context)" TwitchPointsReward="tp" />
+                                break;
+                            case TwitchChatCommand tcc:
+                                <TwitchChatCommandConfig onDelete="() => DeleteTrigger(context)" TwitchChatCommand="tcc" />
+                                break;
+                            default:
+                                break;
+
+                        }
                     </MudTd>
                 </RowTemplate>
             </MudTable>
@@ -144,11 +141,10 @@ else
     public string Id { get; set; } = default!;
 
     public Data.Models.Action? ActionObject { get; set; }
-    public CustomReward[] TwitchRewards { get; set; } = Array.Empty<CustomReward>();
 
     public double RateLimit { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
 
         ActionObject = ConfigService.GetAction(new Guid(Id));
@@ -156,8 +152,7 @@ else
         {
             RateLimit = ActionObject.RateLimit.TotalMilliseconds;
         }
-        TwitchRewards = await TwitchApiService.GetPointRewards();
-        StateHasChanged();
+        ///StateHasChanged(); //Make a comment why
     }
 
     public void NewTrigger(TriggerType type)
@@ -167,6 +162,9 @@ else
         {
             case TriggerType.TwitchPoints:
                 newTrigger = new TwitchPoints();
+                break;
+            case TriggerType.TwitchChatCommand:
+                newTrigger = new TwitchChatCommand();
                 break;
             default:
                 throw new ArgumentException("No type found", nameof(type));

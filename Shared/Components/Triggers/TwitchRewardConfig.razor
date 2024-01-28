@@ -1,0 +1,37 @@
+﻿@using TwitchLib.Api.Helix.Models.ChannelPoints;
+
+<div class="d-flex align-center gap-5">
+    <MudSelect T="string" @bind-Value="@TwitchPointsReward.Id" Label="Reward" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+        @foreach (CustomReward reward in TwitchRewards)
+        {
+            <MudSelectItem Value="@(reward.Id)">
+                @reward.Title
+            </MudSelectItem>
+        }
+    </MudSelect>
+    <MudIconButton class="ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                   OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Inject]
+    public required Services.Twitch.TwitchApiService TwitchApiService { get; set; }
+
+    [Parameter]
+    public required Data.Models.TwitchPoints TwitchPointsReward { get; set; }
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    public CustomReward[] TwitchRewards { get; set; } = Array.Empty<CustomReward>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        TwitchRewards = await TwitchApiService.GetPointRewards();
+        StateHasChanged();
+    }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}

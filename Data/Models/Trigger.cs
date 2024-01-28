@@ -5,9 +5,11 @@ namespace Kanoe.Data.Models
     public enum TriggerType
     {
         TwitchPoints,
+        TwitchChatCommand,
     }
 
     [XmlInclude(typeof(TwitchPoints))]
+    [XmlInclude(typeof(TwitchChatCommand))]
     public abstract class Trigger : ICloneable
     {
         public abstract TriggerType Type { get; }
@@ -38,5 +40,28 @@ namespace Kanoe.Data.Models
         }
 
         public override int GetHashCode() { return Id.GetHashCode(); }
+    }
+
+    public class TwitchChatCommand : Trigger
+    {
+        public override TriggerType Type { get { return TriggerType.TwitchChatCommand; } }
+
+        public string? Command { get; set; }
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is TwitchChatCommand tcc)
+            {
+                return tcc.Command == Command;
+            }
+            return false;
+        }
+
+        public override int GetHashCode() { return Command == null ? 0 : Command.GetHashCode(); }
     }
 }

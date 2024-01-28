@@ -1,4 +1,5 @@
-﻿using Kanoe.Hubs;
+﻿using Kanoe.Data.Models;
+using Kanoe.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using TwitchLib.Client;
@@ -13,12 +14,16 @@ namespace Kanoe.Services.Twitch
     {
         private readonly TwitchClient client;
         private readonly IHubContext<Chat> hubContext;
+        private readonly Config config;
+        private readonly ActionsService actionsService;
 
         private readonly TaskCompletionSource<bool> IsConnected = new();
 
-        public TwitchChatService(IHubContext<Chat> hub)
+        public TwitchChatService(IHubContext<Chat> hub, Config configService, ActionsService aService)
         {
             hubContext = hub;
+            config = configService;
+            actionsService = aService;
             Random rnd = new();
             ConnectionCredentials credentials = new("justinfan" + rnd.Next(100000, 999999).ToString(), "access_token");
 
@@ -55,6 +60,12 @@ namespace Kanoe.Services.Twitch
 
         private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
         {
+            bool isCommand = e.ChatMessage.Message[0] == config.GetTwitchChatPrefix();
+            if (isCommand)
+            {
+                Dictionary<string, string> varibles = new();
+                actionsService.FireTrigger(new TwitchChatCommand() { Command = e.ChatMessage.Message[1..] }, varibles);
+            }
             Data.Models.ChatMessage Message = new(
                 e.ChatMessage.Id,
                 e.ChatMessage.Message,
@@ -62,7 +73,7 @@ namespace Kanoe.Services.Twitch
                 e.ChatMessage.Color,
                 e.ChatMessage.ColorHex,
                 e.ChatMessage.EmoteSet.Emotes.Select(e => new Data.Models.Emote(e.Id, e.Name)).ToList(),
-                false
+                isCommand
                 );
             string json = JsonSerializer.Serialize(Message);
             hubContext.Clients.Group(e.ChatMessage.Channel).SendAsync("ReceiveMessage", json);
