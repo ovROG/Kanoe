@@ -1,5 +1,6 @@
 ﻿using Kanoe.Data.Models;
 using Kanoe.Hubs;
+using Kanoe.Shared;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using TwitchLib.Client;
@@ -64,7 +65,14 @@ namespace Kanoe.Services.Twitch
             if (isCommand)
             {
                 Dictionary<string, string> varibles = new();
-                actionsService.FireTrigger(new TwitchChatCommand() { Command = e.ChatMessage.Message[1..] }, varibles);
+                string[] command = e.ChatMessage.Message.Split(' ', 2);
+                Logger.Log($"TWITCH CHAT: Trying command:{command[0]}");
+                if (command.Length > 1)
+                {
+                    varibles["CmdMessage"] = command[1];
+                    Logger.Log($"TWITCH CHAT: With data:{command[1]}");
+                }
+                actionsService.FireTrigger(new TwitchChatCommand() { Command = command[0][1..] }, varibles);
             }
             Data.Models.ChatMessage Message = new(
                 e.ChatMessage.Id,
