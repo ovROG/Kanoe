@@ -56,6 +56,8 @@ namespace Kanoe.Services.Twitch
 
             client.OnConnected += Client_OnConnected;
 
+            client.OnRaidNotification += Client_OnRaid;
+
             client.Initialize(credentials); //TODO: Error check
 
             client.Connect(); //TODO: Auto reconnect on fails
@@ -71,8 +73,9 @@ namespace Kanoe.Services.Twitch
 
         public virtual void OnNext(ObservationEvent e)
         {
-            if(e.Event is TwitchChatMessage tcm)
+            if (e.Event is TwitchChatMessage tcm)
             {
+                Logger.Log($"TwitchChatMessage: {tcm.FillTemplate(e.Varibles)}");
                 SendMessage(tcm.FillTemplate(e.Varibles));
             }
         }
@@ -91,7 +94,8 @@ namespace Kanoe.Services.Twitch
             {
                 Dictionary<string, string> varibles = new()
                 {
-                    {"{name}", e.ChatMessage.DisplayName}
+                    {"{name}", e.ChatMessage.DisplayName},
+                    {"{rnd}", new Random().Next(0,100).ToString()}
                 };
 
                 string[] command = e.ChatMessage.Message.Split(' ', 2);
@@ -122,6 +126,16 @@ namespace Kanoe.Services.Twitch
             hubContext.Clients.Group(e.Channel).SendAsync("ClearedMessage", e.TargetMessageId);
         }
 
+        private void Client_OnRaid(object? sender, OnRaidNotificationArgs e)
+        {
+            Logger.Log($"TWITCH RAID: from:{e.RaidNotification.Login}");
+            Dictionary<string, string> varibles = new()
+                {
+                    {"{name}", e.RaidNotification.DisplayName},
+                    {"{login}", e.RaidNotification.Login}
+                };
+            actionsService.FireTrigger(new TwitchRaid(), varibles);
+        }
         private void Client_OnConnected(object? sender, OnConnectedArgs e)
         {
             IsConnected.SetResult(true);

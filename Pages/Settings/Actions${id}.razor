@@ -62,6 +62,9 @@
                             case TwitchChatCommand tcc:
                                 <TwitchChatCommandConfig onDelete="() => DeleteTrigger(context)" TwitchChatCommand="tcc" />
                                 break;
+                            case TwitchRaid tr:
+                                <TwitchRaidConfig onDelete="() => DeleteTrigger(context)" />
+                                break;
                             default:
                                 break;
 
@@ -168,6 +171,9 @@ else
                 break;
             case TriggerType.TwitchChatCommand:
                 newTrigger = new TwitchChatCommand();
+                break;
+            case TriggerType.TwitchRaid:
+                newTrigger = new TwitchRaid();
                 break;
             default:
                 throw new ArgumentException("No type found", nameof(type));

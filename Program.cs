@@ -74,6 +74,6 @@ Process.Start(new ProcessStartInfo // Open Browser
 });
 
 app.Services.GetService<AIMPService>();
-app.Services.GetService<AIMPService>();
+app.Services.GetService<VTSService>();
 
 app.Run();

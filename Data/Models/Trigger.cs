@@ -1,4 +1,5 @@
 ﻿using System.Xml.Serialization;
+using static Kanoe.Data.Models.AIMP;
 
 namespace Kanoe.Data.Models
 {
@@ -6,10 +7,12 @@ namespace Kanoe.Data.Models
     {
         TwitchPoints,
         TwitchChatCommand,
+        TwitchRaid,
     }
 
     [XmlInclude(typeof(TwitchPoints))]
     [XmlInclude(typeof(TwitchChatCommand))]
+    [XmlInclude(typeof(TwitchRaid))]
     public abstract class Trigger : ICloneable
     {
         public abstract TriggerType Type { get; }
@@ -63,5 +66,26 @@ namespace Kanoe.Data.Models
         }
 
         public override int GetHashCode() { return Command == null ? 0 : Command.GetHashCode(); }
+    }
+
+    public class TwitchRaid : Trigger
+    {
+        public override TriggerType Type { get { return TriggerType.TwitchRaid; } }
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is TwitchRaid)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public override int GetHashCode() { return 0; }
     }
 }

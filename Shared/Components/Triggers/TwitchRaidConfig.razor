@@ -1,0 +1,14 @@
+﻿<div class="d-flex align-center gap-5">
+    <MudIconButton class="ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                   OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}
