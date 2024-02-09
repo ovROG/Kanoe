@@ -6,7 +6,7 @@
     <MudText Typo="Typo.h4">Twitch:</MudText>
     <div class="d-flex align-center gap-10">
         <MudText>Auth Status:</MudText>
-        @if (ConfigService.GetTwitchToken() != null)
+        @if (ConfigService.GetTwitchToken() != null) //TODO: proper check
         {
             <MudChip Color="Color.Success" Size="Size.Small">Active</MudChip>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TwitchAuth" Class="ml-auto" StartIcon="@Icons.Material.Filled.Cached">ReAuth</MudButton>
@@ -48,7 +48,7 @@
             {"redirect_uri", $"{Navigation.BaseUri}twitchoauth" },
             {"response_type", "token" },
             {"force_verify", "true" },
-            {"scope", "bits:read channel:read:redemptions channel:read:subscriptions" },
+            {"scope", "bits:read channel:read:redemptions channel:read:subscriptions chat:edit chat:read" },
         };
         Uri Url = new(QueryHelpers.AddQueryString("https://id.twitch.tv/oauth2/authorize", query));
         Navigation.NavigateTo(Url.AbsoluteUri);

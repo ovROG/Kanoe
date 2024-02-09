@@ -73,4 +73,7 @@ Process.Start(new ProcessStartInfo // Open Browser
     UseShellExecute = true
 });
 
+app.Services.GetService<AIMPService>();
+app.Services.GetService<AIMPService>();
+
 app.Run();

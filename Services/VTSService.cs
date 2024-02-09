@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace Kanoe.Services
 {
-    public class VTSService
+    public class VTSService : IObserver<ObservationEvent>
     {
         //TODO: Probably better to move it somewhere
         struct VTSResponse<T>
@@ -114,10 +114,11 @@ namespace Kanoe.Services
 
         //-----------
 
-        public VTSService(Config configService, IHubContext<Notifications, INotificationsClient> hub)
+        public VTSService(Config configService, IHubContext<Notifications, INotificationsClient> hub, ActionsService aService)
         {
             config = configService;
             hubContext = hub;
+            aService.Subscribe(this);
         }
 
         private async Task DiscoverAPI()
@@ -306,6 +307,27 @@ namespace Kanoe.Services
         }
 
         //Public
+
+        public virtual void OnCompleted()
+        {
+        }
+
+        public virtual void OnError(Exception error)
+        {
+        }
+
+        public virtual void OnNext(ObservationEvent e)
+        {
+            switch (e.Event)
+            {
+                case VTSHotkey vtshotkey:
+                    _ = SendHotkey(vtshotkey.Id);
+                    break;
+                case VTSExpression vtsexpression:
+                    _ = SendExpression(vtsexpression.File, vtsexpression.Active);
+                    break;
+            }
+        }
 
         public async Task<List<Hotkey>> RequestHotkeysList()
         {

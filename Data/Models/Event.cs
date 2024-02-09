@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Xml.Serialization;
-using static Kanoe.Data.Models.VTSExpression;
 
 namespace Kanoe.Data.Models
 {
@@ -11,6 +10,7 @@ namespace Kanoe.Data.Models
         VTSHotkey,
         VTSExpression,
         AIMP,
+        TwitchChatMessage,
     }
 
     [XmlInclude(typeof(Sound))]
@@ -18,6 +18,7 @@ namespace Kanoe.Data.Models
     [XmlInclude(typeof(VTSHotkey))]
     [XmlInclude(typeof(VTSExpression))]
     [XmlInclude(typeof(AIMP))]
+    [XmlInclude(typeof(TwitchChatMessage))]
     public abstract class Event : ICloneable
     {
         public abstract EventType Type { get; }
@@ -26,6 +27,12 @@ namespace Kanoe.Data.Models
         {
             return MemberwiseClone();
         }
+    }
+
+    public struct ObservationEvent
+    {
+        public Event Event { get; set; }
+        public Dictionary<string, string> Varibles { get; set; }
     }
 
     public class Sound : Event //TODO: Add "Random Sound" event
@@ -115,6 +122,26 @@ namespace Kanoe.Data.Models
         public override object Clone()
         {
             return MemberwiseClone();
+        }
+    }
+
+    public class TwitchChatMessage : Event
+    {
+        public override EventType Type { get { return EventType.TwitchChatMessage; } }
+
+        public string Template { get; set; } = "Hey {name}";
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
+        public string FillTemplate(Dictionary<string, string> varibles)
+        {
+            StringBuilder stringBuilder = new(Template);
+            foreach (KeyValuePair<string, string> var in varibles)
+            {
+                stringBuilder.Replace(var.Key, var.Value);
+            }
+            return stringBuilder.ToString();
         }
     }
 }

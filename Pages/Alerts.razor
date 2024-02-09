@@ -8,7 +8,7 @@
 <PageTitle>Alerts</PageTitle>
 
 @code {
-    //TODO:Add option to make multiple alerts pages and select with one to use in action
+    //TODO:Add option to make multiple alerts pages and select withone to use in action
     [Inject]
     public required NavigationManager Navigation { get; set; }
     [Inject]
@@ -17,7 +17,7 @@
     [Inject]
     public required TwitchEventsService TwitchEventsService { get; set; }
     [Inject]
-    public required Services.ActionsService ActionsService { get; set; }
+    public required Services.ActionsService ActionsService { get; set; } // Init
 
     private HubConnection? hubConnection;
 

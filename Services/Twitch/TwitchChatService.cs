@@ -11,7 +11,7 @@ using TwitchLib.Communication.Models;
 
 namespace Kanoe.Services.Twitch
 {
-    public class TwitchChatService
+    public class TwitchChatService : IObserver<ObservationEvent>
     {
         private readonly TwitchClient client;
         private readonly IHubContext<Chat> hubContext;
@@ -25,8 +25,17 @@ namespace Kanoe.Services.Twitch
             hubContext = hub;
             config = configService;
             actionsService = aService;
+
+            aService.Subscribe(this);
+
+
             Random rnd = new();
             ConnectionCredentials credentials = new("justinfan" + rnd.Next(100000, 999999).ToString(), "access_token");
+
+            if (configService.GetTwitchToken() != null)
+            {
+                credentials = new(configService.GetTwitchLogin(), configService.GetTwitchToken());
+            }
 
             var clientOptions = new ClientOptions
             {
@@ -47,9 +56,25 @@ namespace Kanoe.Services.Twitch
 
             client.OnConnected += Client_OnConnected;
 
-            client.Initialize(credentials);
+            client.Initialize(credentials); //TODO: Error check
 
             client.Connect(); //TODO: Auto reconnect on fails
+        }
+
+        public virtual void OnCompleted()
+        {
+        }
+
+        public virtual void OnError(Exception error)
+        {
+        }
+
+        public virtual void OnNext(ObservationEvent e)
+        {
+            if(e.Event is TwitchChatMessage tcm)
+            {
+                SendMessage(tcm.FillTemplate(e.Varibles));
+            }
         }
 
         public async Task<TwitchChatService> ConnectTo(string channel)
@@ -64,14 +89,19 @@ namespace Kanoe.Services.Twitch
             bool isCommand = e.ChatMessage.Message[0] == config.GetTwitchChatPrefix();
             if (isCommand)
             {
-                Dictionary<string, string> varibles = new();
+                Dictionary<string, string> varibles = new()
+                {
+                    {"{name}", e.ChatMessage.DisplayName}
+                };
+
                 string[] command = e.ChatMessage.Message.Split(' ', 2);
                 Logger.Log($"TWITCH CHAT: Trying command:{command[0]}");
                 if (command.Length > 1)
                 {
-                    varibles["CmdMessage"] = command[1];
+                    varibles["{cmdMessage}"] = command[1];
                     Logger.Log($"TWITCH CHAT: With data:{command[1]}");
                 }
+
                 actionsService.FireTrigger(new TwitchChatCommand() { Command = command[0][1..] }, varibles);
             }
             Data.Models.ChatMessage Message = new(
@@ -95,6 +125,18 @@ namespace Kanoe.Services.Twitch
         private void Client_OnConnected(object? sender, OnConnectedArgs e)
         {
             IsConnected.SetResult(true);
+        }
+
+        public void SendMessage(string message)
+        {
+            try
+            {
+                client.SendMessage(config.GetTwitchLogin(), message);
+            }
+            catch
+            {
+                Logger.Error($"UNABLE SEND TWITCH MESSAGE: {message} | to {config.GetTwitchLogin()}");
+            }
         }
     }
 }

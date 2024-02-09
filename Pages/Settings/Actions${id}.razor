@@ -112,6 +112,9 @@
                             case AIMP aimp:
                                 <AIMPConfig AIMP="@aimp" onDelete="() => DeleteEvent(context)" />
                                 break;
+                            case TwitchChatMessage tcm:
+                                <TwitchChatMessageConfig TCM="tcm" onDelete="() => DeleteEvent(context)" />
+                                break;
                             default:
                                 break;
                         }
@@ -196,6 +199,9 @@ else
                 break;
             case EventType.AIMP:
                 newEvent = new Data.Models.AIMP();
+                break;
+            case EventType.TwitchChatMessage:
+                newEvent = new Data.Models.TwitchChatMessage();
                 break;
             default:
                 throw new ArgumentException("No type found", nameof(type));

@@ -1,25 +1,27 @@
 using Kanoe.Data.Models;
 using Kanoe.Hubs;
+using Kanoe.Services.Twitch;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Kanoe.Services
 {
-    public class ActionsService
+    public class ActionsService : IObservable<ObservationEvent>
     {
         private readonly Config config;
-        private readonly VTSService VTSService;
-        private readonly IHubContext<Actions, IActionsClient> hubContext;
+        private readonly IHubContext<Actions, IActionsClient> actionsHub;
         private readonly LocalSpeechService LocalSpeechService;
-        private readonly AIMPService AIMPService;
         private int ttsCounter; //Mabybe change in future
 
-        public ActionsService(Config configService, VTSService vtsService, IHubContext<Actions, IActionsClient> hub, LocalSpeechService localSpeechService, AIMPService aIMPService)
+        List<IObserver<ObservationEvent>> observers = new();
+
+        public ActionsService(
+            IHubContext<Actions, IActionsClient> aHub,
+            Config configService,
+            LocalSpeechService localSpeechService)
         {
+            actionsHub = aHub;
             config = configService;
-            VTSService = vtsService;
-            hubContext = hub;
             LocalSpeechService = localSpeechService;
-            AIMPService = aIMPService;
         }
 
         public ActionsService FireTrigger(Trigger trigger, Dictionary<string, string> varibles)
@@ -35,44 +37,54 @@ namespace Kanoe.Services
             return this;
         }
 
+        private class Unsubscriber : IDisposable
+        {
+            private List<IObserver<ObservationEvent>> _observers;
+            private IObserver<ObservationEvent> _observer;
+
+            public Unsubscriber(List<IObserver<ObservationEvent>> observers, IObserver<ObservationEvent> observer)
+            {
+                _observers = observers;
+                _observer = observer;
+            }
+
+            public void Dispose()
+            {
+                if (!(_observer == null)) _observers.Remove(_observer);
+            }
+        }
+
+        public IDisposable Subscribe(IObserver<ObservationEvent> observer)
+        {
+            if (!observers.Contains(observer))
+                observers.Add(observer);
+
+            return new Unsubscriber(observers, observer);
+        }
+
         public async void RunEvent(Event e, Dictionary<string, string> varibles)
         {
             switch (e)
             {
                 case TTS ts:
                     switch (ts.SourceType)
-                        {
+                    {
                         case TTS.Source.Browser:
-                            await hubContext.Clients.All.TTS(ts.FillTemplate(varibles), ts.Volume);
+                            await actionsHub.Clients.All.TTS(ts.FillTemplate(varibles), ts.Volume);
                             break;
                         case TTS.Source.Local:
                             await LocalSpeechService.TTSToAudoFile(ts.FillTemplate(varibles), $@"\UserData\temp\tts{ttsCounter}.wav", ts.Voice);
-                            await hubContext.Clients.All.Sound($@"temp\tts{ttsCounter}.wav", ts.Volume);
+                            await actionsHub.Clients.All.Sound($@"temp\tts{ttsCounter}.wav", ts.Volume);
                             ttsCounter++;
                             break;
                     }
                     break;
                 case Sound sound:
-                    await hubContext.Clients.All.Sound(sound.File, sound.Volume);
-                    break;
-                case VTSHotkey vtshotkey:
-                    await VTSService.SendHotkey(vtshotkey.Id);
-                    break;
-                case VTSExpression vtsexpression:
-                    await VTSService.SendExpression(vtsexpression.File, vtsexpression.Active);
-                    break;
-                case AIMP aimp:
-                    switch(aimp.CMD)
-                    {
-                        case AIMP.Command.NEXT_TRACK:
-                            AIMPService.NextTrack();
-                            break;
-                        case AIMP.Command.PREV_TRACK:
-                            AIMPService.PrevTrack();
-                            break;
-                    }
+                    await actionsHub.Clients.All.Sound(sound.File, sound.Volume);
                     break;
                 default:
+                    foreach (var observer in observers)
+                        observer.OnNext(new ObservationEvent { Event = e, Varibles = varibles });
                     break;
             }
         }

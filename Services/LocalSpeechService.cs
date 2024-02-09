@@ -1,4 +1,6 @@
-﻿using Kanoe.Shared;
+﻿using Kanoe.Data.Models;
+using Kanoe.Shared;
+using Microsoft.AspNetCore.SignalR.Client;
 using System.Runtime.InteropServices;
 using System.Speech.Synthesis;
 
