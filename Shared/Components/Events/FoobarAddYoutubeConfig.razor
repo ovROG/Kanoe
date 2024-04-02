@@ -1,0 +1,43 @@
+﻿<div class="d-flex align-center gap-5">
+    @if (Playlists == null)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudSelect T="string" @bind-Value="@(FAY.PlaylistId)" Label="Playlist" AnchorOrigin="Origin.BottomCenter"
+                   Variant="Variant.Outlined">
+            @foreach (Services.FoobarService.Playlist playlist in Playlists)
+            {
+                <MudSelectItem Value="@(playlist.id)">
+                    @playlist.title
+                </MudSelectItem>
+            }
+        </MudSelect>
+        <MudNumericField Class="flex-grow-0" @bind-Value="FAY.ViewsThreshold" Label="View Threshold" Variant="Variant.Filled" Min="0" />
+    }
+    <MudIconButton class="flex-none ml-auto" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"
+                   OnClick="() => onDeleteHandler()" />
+</div>
+
+@code {
+    [Inject]
+    public required Services.FoobarService FoobarService { get; set; }
+
+    [Parameter]
+    public required Data.Models.FoobarAddYoutube FAY { get; set; }
+    [Parameter]
+    public EventCallback onDelete { get; set; }
+
+    protected List<Services.FoobarService.Playlist>? Playlists { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Playlists = await FoobarService.GetPlaylists();
+    }
+
+    protected async void onDeleteHandler()
+    {
+        await onDelete.InvokeAsync();
+    }
+}

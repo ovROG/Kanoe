@@ -27,7 +27,7 @@ builder.Services.AddSingleton<Config>();
 builder.Services.AddSingleton<NativeOSMethodsService>();
 builder.Services.AddSingleton(userFiles);
 builder.Services.AddSingleton<LocalSpeechService>();
-builder.Services.AddSingleton<AIMPService>();
+builder.Services.AddSingleton<FoobarService>();
 
 
 builder.Services.AddSingleton<ActionsService>();
@@ -73,7 +73,7 @@ Process.Start(new ProcessStartInfo // Open Browser
     UseShellExecute = true
 });
 
-app.Services.GetService<AIMPService>();
+app.Services.GetService<FoobarService>();
 app.Services.GetService<VTSService>();
 
 app.Run();

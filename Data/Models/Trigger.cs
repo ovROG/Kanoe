@@ -1,5 +1,4 @@
 ﻿using System.Xml.Serialization;
-using static Kanoe.Data.Models.AIMP;
 
 namespace Kanoe.Data.Models
 {

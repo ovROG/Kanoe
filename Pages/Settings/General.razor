@@ -22,6 +22,12 @@
         <MudTextField @bind-Value="TwitchPrefix" Label="Prefix" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SavePrefix" Class="ml-auto" StartIcon="@Icons.Material.Filled.Save">Update</MudButton>
     </div>
+    <MudText Typo="Typo.h4">Youtube:</MudText>
+    <div class="d-flex align-center gap-10">
+        <MudText>API key:</MudText>
+        <MudTextField @bind-Value="YoutubeKey" InputType="InputType.Password"  Label="key" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveKey" Class="ml-auto" StartIcon="@Icons.Material.Filled.Save">Update</MudButton>
+    </div>
 </div>
 
 
@@ -35,9 +41,12 @@
 
     public char? TwitchPrefix { get; set; } 
 
+    public string? YoutubeKey { get; set; }
+
     protected override void OnInitialized()
     {
         TwitchPrefix = ConfigService.GetTwitchChatPrefix();
+        YoutubeKey = ConfigService.GetYoutubeApiKey();
     }
 
     private void TwitchAuth()
@@ -57,5 +66,10 @@
     private void SavePrefix()
     {
         ConfigService.SetTwitchChatPrefix(TwitchPrefix ?? '!');
+    }
+
+    private void SaveKey()
+    {
+        ConfigService.SetYoutubeApiKey(YoutubeKey ?? "");
     }
 }

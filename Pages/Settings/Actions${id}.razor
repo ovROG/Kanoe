@@ -54,7 +54,7 @@
                 <RowTemplate>
                     <MudTd>
                         <MudText Class="pb-3">@context.Type:</MudText>
-                        @switch (context)
+                            @switch (context)
                         {
                             case TwitchPoints tp:
                                 <TwitchRewardConfig onDelete="() => DeleteTrigger(context)" TwitchPointsReward="tp" />
@@ -98,7 +98,7 @@
                 <RowTemplate>
                     <MudTd>
                         <MudText Class="pb-3">@context.Type:</MudText>
-                        @switch (context)
+                            @switch (context)
                         {
                             case TTS tts:
                                 <TTSConfig TTS="@tts" onDelete="() => DeleteEvent(context)" />
@@ -112,8 +112,8 @@
                             case VTSExpression vtsexpression:
                                 <VTSExpressionConfig VTSExpression="@vtsexpression" onDelete="() => DeleteEvent(context)" />
                                 break;
-                            case AIMP aimp:
-                                <AIMPConfig AIMP="@aimp" onDelete="() => DeleteEvent(context)" />
+                            case FoobarAddYoutube fay:
+                                <FoobarAddYoutubeConfig FAY="fay" onDelete="() => DeleteEvent(context)" />
                                 break;
                             case TwitchChatMessage tcm:
                                 <TwitchChatMessageConfig TCM="tcm" onDelete="() => DeleteEvent(context)" />
@@ -203,8 +203,8 @@ else
             case EventType.VTSExpression:
                 newEvent = new Data.Models.VTSExpression();
                 break;
-            case EventType.AIMP:
-                newEvent = new Data.Models.AIMP();
+            case EventType.FoobarAddYoutube:
+                newEvent = new Data.Models.FoobarAddYoutube();
                 break;
             case EventType.TwitchChatMessage:
                 newEvent = new Data.Models.TwitchChatMessage();

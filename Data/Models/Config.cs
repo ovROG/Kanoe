@@ -17,4 +17,9 @@
     {
 
     }
+
+    public class YoutubeConfig: Config
+    {
+        public string? APIKey { get; set;}
+    }
 }

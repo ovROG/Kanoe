@@ -14,6 +14,8 @@ namespace Kanoe.Services
 
         List<IObserver<ObservationEvent>> observers = new();
 
+        Dictionary<string, string> globalVaribles = new();
+
         public ActionsService(
             IHubContext<Actions, IActionsClient> aHub,
             Config configService,
@@ -27,13 +29,24 @@ namespace Kanoe.Services
         public ActionsService FireTrigger(Trigger trigger, Dictionary<string, string> varibles)
         {
             List<Data.Models.Action> triggeredActions = config.GetActionsByTrigger(trigger); //TODO: Figure out how to implement rate limit
+
+            var fullVars = globalVaribles.Concat(varibles)
+                .ToLookup(x => x.Key, x => x.Value)
+                .ToDictionary(x => x.Key, g => g.First()); ;
+
             foreach (Data.Models.Action action in triggeredActions)
             {
                 foreach (Event e in action.Events)
                 {
-                    RunEvent(e, varibles);
+                    RunEvent(e, fullVars);
                 }
             }
+            return this;
+        }
+
+        public ActionsService SetVarible(string k, string v)
+        {
+            globalVaribles[k] = v;
             return this;
         }
 

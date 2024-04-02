@@ -1,0 +1,47 @@
+﻿@page "/nowplaying"
+@layout EmptyLayout
+@implements IAsyncDisposable
+
+@using Kanoe.Services
+@using Microsoft.AspNetCore.SignalR.Client
+
+<div class="name" >@(current)</div>
+
+@code {
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    [Inject]
+    public required FoobarService foobarService { get; set; }
+
+    private HubConnection? hubConnection;
+
+    private string? current;
+
+    protected override async Task OnInitializedAsync()
+    {
+        current = foobarService.GetCurrentTrack();
+
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(Navigation.ToAbsoluteUri("/actionshub"))
+        .Build();
+
+        hubConnection.On<string>("NowPlaying", OnTrackChange);
+
+        await hubConnection.StartAsync();
+    }
+
+    public void OnTrackChange(string newCurrent)
+    {
+        current = newCurrent;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+}

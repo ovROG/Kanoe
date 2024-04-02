@@ -6,6 +6,7 @@ namespace Kanoe.Hubs
     {
         Task TTS(string message, double volume);
         Task Sound(string file, double volume);
+        Task NowPlaying(string name);
     }
 
     public class Actions : Hub<IActionsClient>

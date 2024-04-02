@@ -9,7 +9,7 @@ namespace Kanoe.Data.Models
         TTS,
         VTSHotkey,
         VTSExpression,
-        AIMP,
+        FoobarAddYoutube,
         TwitchChatMessage,
     }
 
@@ -17,7 +17,7 @@ namespace Kanoe.Data.Models
     [XmlInclude(typeof(TTS))]
     [XmlInclude(typeof(VTSHotkey))]
     [XmlInclude(typeof(VTSExpression))]
-    [XmlInclude(typeof(AIMP))]
+    [XmlInclude(typeof(FoobarAddYoutube))]
     [XmlInclude(typeof(TwitchChatMessage))]
     public abstract class Event : ICloneable
     {
@@ -108,16 +108,12 @@ namespace Kanoe.Data.Models
         }
     }
 
-    public class AIMP : Event
+    public class FoobarAddYoutube : Event
     {
-        public override EventType Type { get { return EventType.AIMP; } }
-        public enum Command
-        {
-            NEXT_TRACK,
-            PREV_TRACK
-        }
+        public override EventType Type { get { return EventType.FoobarAddYoutube; } }
 
-        public Command CMD { get; set; } = Command.NEXT_TRACK;
+        public int ViewsThreshold { get; set; } = 1000;
+        public string PlaylistId { get; set; } = default!;
 
         public override object Clone()
         {

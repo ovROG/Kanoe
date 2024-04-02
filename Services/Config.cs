@@ -12,12 +12,15 @@ namespace Kanoe.Services
 
         private VTSConfig VTSConfig { get; set; }
 
+        private YoutubeConfig YoutubeConfig { get; set; }
+
         private List<Data.Models.Action> Actions { get; set; }
 
         public Config()
         {
             TwitchConfig = new TwitchConfig();
             VTSConfig = new VTSConfig();
+            YoutubeConfig = new YoutubeConfig();
             Actions = new List<Data.Models.Action>();
             Load();
         }
@@ -139,6 +142,20 @@ namespace Kanoe.Services
             return this;
         }
 
+        //Youtube
+
+        public string? GetYoutubeApiKey()
+        {
+            return YoutubeConfig.APIKey;
+        }
+
+        public Config SetYoutubeApiKey(string? key)
+        {
+            YoutubeConfig.APIKey = key;
+            Save();
+            return this;
+        }
+
         //etc
 
         public Config Save() //TODO: Make it less repetitive. Or even maybe separate it.
@@ -147,6 +164,7 @@ namespace Kanoe.Services
 
             XmlSerializer TwitchSerializer = new(typeof(TwitchConfig));
             XmlSerializer VTSSerializer = new(typeof(VTSConfig));
+            XmlSerializer YoutubeSerializer = new(typeof(YoutubeConfig));
             XmlSerializer ActionSerializer = new(typeof(List<Data.Models.Action>));
 
             using StreamWriter TwitchWriter = new(ConfigPath + "twitch.cfg");
@@ -154,6 +172,9 @@ namespace Kanoe.Services
 
             using StreamWriter VTSWriter = new(ConfigPath + "vts.cfg");
             VTSSerializer.Serialize(VTSWriter, VTSConfig);
+
+            using StreamWriter YoutubeWriter = new(ConfigPath + "youtube.cfg");
+            YoutubeSerializer.Serialize(YoutubeWriter, YoutubeConfig);
 
             using StreamWriter ActionWriter = new(ConfigPath + "actions.cfg");
             ActionSerializer.Serialize(ActionWriter, Actions);
@@ -175,6 +196,21 @@ namespace Kanoe.Services
                 {
                     TwitchConfig = new();
                     Logger.Error("UNABLE TO READ TWITCH CONFIG");
+                }
+            }
+
+            if (File.Exists(ConfigPath + "youtube.cfg"))
+            {
+                try
+                {
+                    XmlSerializer serializer = new(typeof(YoutubeConfig));
+                    using StreamReader reader = new(ConfigPath + "youtube.cfg");
+                    YoutubeConfig = (YoutubeConfig)serializer.Deserialize(reader)!;
+                }
+                catch
+                {
+                    YoutubeConfig = new();
+                    Logger.Error("UNABLE TO READ VTS CONFIG");
                 }
             }
 
